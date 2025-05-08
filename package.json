@@ -4,14 +4,14 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "BROWSER=google-chrome vite",
     "build": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {
-    "@mantine/core": "7.17.7",
+    "@mantine/core": "^8.0.0",
     "@mantine/form": "^8.0.0",
-    "@mantine/hooks": "7.17.7",
+    "@mantine/hooks": "^8.0.0",
     "@tabler/icons-react": "^3.31.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
@@ -22,6 +22,7 @@
     "postcss": "^8.5.3",
     "postcss-preset-mantine": "1.17.0",
     "postcss-simple-vars": "^7.0.1",
-    "vite": "^6.2.2"
+    "vite": "^6.3.5",
+    "vite-plugin-inspect": "^11.0.1"
   }
 }
