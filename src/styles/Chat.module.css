@@ -1,0 +1,81 @@
+.container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #ffffff 60%, #f8fafb 40%);
+  display: flex;
+}
+
+.illustrationContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 40px;
+  background: transparent;
+  position: relative;
+}
+
+.illustration {
+  max-width: 80%;
+  height: auto;
+}
+
+.chatContainer {
+  width: 400px;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  background: transparent;
+}
+
+.messagesContainer {
+  flex: 1;
+  overflow-y: auto;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.userBubble {
+  background: #00e5c9;
+  border-radius: 16px 16px 0 16px;
+  color: white;
+  padding: 12px 16px;
+  max-width: 70%;
+}
+
+.botBubble {
+  background: #ffffff;
+  border-radius: 16px 16px 16px 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  color: #333;
+  padding: 12px 16px;
+  max-width: 70%;
+}
+
+.userAvatar {
+  background-color: #00e5c9;
+  color: white;
+}
+
+.input {
+  background-color: white;
+  border: 1px solid #eee;
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.input:focus {
+  border: 1px solid #00e5c9;
+  box-shadow: 0 2px 8px rgba(0, 229, 201, 0.1);
+}
+
+.sendButton {
+  background-color: #00e5c9;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+}
