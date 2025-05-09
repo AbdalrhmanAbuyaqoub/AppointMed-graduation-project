@@ -1,15 +1,10 @@
-import React from "react";
-import { Container, Center } from "@mantine/core";
-import { AuthenticationForm } from "../components/Login/AuthenticationForm";
+import { AuthenticationImage } from "../components/Login/AuthenticationImage";
+import { useAuthentication } from "../hooks/useAuthentication";
 
-function Login() {
-  return (
-    <Container size="sm">
-      <Center style={{ minHeight: "100vh" }}>
-        <AuthenticationForm />
-      </Center>
-    </Container>
-  );
-}
+const Login = () => {
+  const { handleLogin } = useAuthentication();
+
+  return <AuthenticationImage onSubmit={handleLogin} />;
+};
 
 export default Login;
