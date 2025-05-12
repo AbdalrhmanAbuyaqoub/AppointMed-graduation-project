@@ -32,5 +32,14 @@ export const LazyComponents = {
 
 // Get default route based on user role
 export const getDefaultRoute = (role) => {
-  return role === "admin" ? ROUTES.DASHBOARD : ROUTES.CHAT;
+  switch (role?.toLowerCase()) {
+    case "patient":
+      return ROUTES.CHAT;
+    case "admin":
+      return ROUTES.HOME;
+    case "doctor":
+      return ROUTES.DASHBOARD;
+    default:
+      return ROUTES.HOME;
+  }
 };

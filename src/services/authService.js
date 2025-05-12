@@ -1,7 +1,35 @@
 import axios from "axios";
+import {
+  setToken,
+  clearToken,
+  getToken,
+  hasValidToken,
+  getAuthHeader,
+} from "./tokenService";
 
-// Temporary hardcoded URL for testing
-const API_URL = "http://localhost:3000/api"; // Replace with your actual API URL
+// API Configuration
+const API_URL = import.meta.env.VITE_API_URL;
+
+// API Endpoints
+const ENDPOINTS = {
+  LOGIN: "/Users/login",
+  REGISTER: "/Users/register",
+  LOGOUT: "/Users/logout",
+};
+
+// Store user data in memory (cleared on page refresh)
+let currentUserData = null;
+
+// Error Messages
+const ERROR_MESSAGES = {
+  NETWORK_ERROR: "Network error occurred. Please check your connection.",
+  SERVER_ERROR: "Server error occurred. Please try again later.",
+  INVALID_CREDENTIALS: "Invalid email or password.",
+  REGISTRATION_FAILED: "Registration failed. Please try again.",
+  EMAIL_EXISTS: "Email already exists",
+  USER_NOT_FOUND: "User not found",
+  WEAK_PASSWORD: "Password is too weak",
+};
 
 // Create axios instance with default config
 const authApi = axios.create({
@@ -11,118 +39,211 @@ const authApi = axios.create({
   },
 });
 
-// Add token to requests if it exists
+// Request Interceptor
 authApi.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    // Skip token for login and register
+    if ([ENDPOINTS.LOGIN, ENDPOINTS.REGISTER].includes(config.url)) {
+      return config;
     }
+
+    const authHeader = getAuthHeader();
+    if (authHeader) {
+      config.headers.Authorization = authHeader;
+    }
+
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// Handle token expiration
+/**
+ * Intercepts all responses to handle authentication errors
+ * Automatically clears token on 401 Unauthorized responses
+ */
 authApi.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const originalRequest = error.config;
-
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-
-      try {
-        // Try to refresh the token
-        const refreshToken = localStorage.getItem("refreshToken");
-        if (refreshToken) {
-          const response = await authApi.post("/auth/refresh-token", {
-            refreshToken,
-          });
-          const { token } = response.data;
-
-          localStorage.setItem("token", token);
-          authApi.defaults.headers.Authorization = `Bearer ${token}`;
-
-          // Retry the original request
-          return authApi(originalRequest);
-        }
-      } catch (refreshError) {
-        // If refresh token fails, logout user
-        localStorage.clear();
-        window.location.href = "/login";
-      }
+    if (error.response?.status === 401) {
+      clearToken();
+      // Optionally redirect to login page or show session expired message
     }
-
     return Promise.reject(error);
   }
 );
 
+/**
+ * Handles API error responses and standardizes error messages
+ * Converts network/server errors into user-friendly messages
+ */
+const handleApiError = (error) => {
+  if (!error.response) {
+    throw new Error(ERROR_MESSAGES.NETWORK_ERROR);
+  }
+
+  const message = error.response?.data?.message || ERROR_MESSAGES.SERVER_ERROR;
+  throw new Error(message);
+};
+
 export const authService = {
-  async login(email, password) {
+  /**
+   * Authenticates user with email/password
+   * Stores JWT token and user data on successful login
+   * @param {Object} userData - Contains email and password
+   * @returns {Promise<{success: boolean, user: Object}>}
+   */
+  async login(userData) {
     try {
-      const response = await authApi.post("/auth/login", { email, password });
-      const { user, token, refreshToken } = response.data;
+      console.log("Attempting login with:", userData.email);
 
-      // Store tokens
-      localStorage.setItem("token", token);
-      localStorage.setItem("refreshToken", refreshToken);
+      const loginData = {
+        email: userData.email,
+        password: userData.password,
+      };
 
-      return { success: true, user };
+      const response = await authApi.post(ENDPOINTS.LOGIN, loginData);
+      console.log("Login response:", response.data);
+
+      const { token, user, role } = response.data;
+
+      if (!token || !user) {
+        console.error("Invalid response format:", response.data);
+        return { success: false, error: "Invalid response from server" };
+      }
+
+      // Store token
+      setToken(token);
+
+      // Create normalized user object
+      const normalizedUser = {
+        ...user,
+        role: role,
+      };
+
+      // Store user data for later use
+      currentUserData = normalizedUser;
+
+      return { success: true, user: normalizedUser };
     } catch (error) {
-      const message = error.response?.data?.message || "Login failed";
-      throw new Error(message);
+      console.error("Login error details:", error.response || error);
+
+      if (error.response?.status === 401) {
+        return { success: false, error: ERROR_MESSAGES.INVALID_CREDENTIALS };
+      }
+
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        ERROR_MESSAGES.SERVER_ERROR;
+      return { success: false, error: errorMessage };
     }
   },
 
+  /**
+   * Creates new user account
+   * Handles validation and duplicate email checking
+   * @param {Object} userData - User registration details
+   * @returns {Promise<{success: boolean, user: Object}>}
+   */
   async register(userData) {
     try {
-      const response = await authApi.post("/auth/register", userData);
-      const { user, token, refreshToken } = response.data;
+      console.log("Registering with data:", userData);
 
-      // Store tokens
-      localStorage.setItem("token", token);
-      localStorage.setItem("refreshToken", refreshToken);
+      const registerData = {
+        email: userData.email,
+        fname: userData.firstName,
+        lname: userData.lastName,
+        password: userData.password,
+        conffirmPassword: userData.confirmPassword,
+        address: userData.address,
+        role: "patient",
+      };
 
-      return { success: true, user };
+      const response = await authApi.post(ENDPOINTS.REGISTER, registerData);
+      console.log("Register response:", response.data);
+
+      const { isSuccess, messages, result } = response.data;
+
+      if (!isSuccess || !result) {
+        console.error("Registration failed:", messages);
+        return {
+          success: false,
+          error: messages || ERROR_MESSAGES.REGISTRATION_FAILED,
+        };
+      }
+
+      // After successful registration, automatically login
+      const loginResult = await this.login({
+        email: userData.email,
+        password: userData.password,
+      });
+
+      if (!loginResult.success) {
+        console.warn(
+          "Auto-login after registration failed:",
+          loginResult.error
+        );
+        return {
+          success: true,
+          user: result,
+          message:
+            "Registration successful but auto-login failed. Please login manually.",
+        };
+      }
+
+      return loginResult;
     } catch (error) {
-      const message = error.response?.data?.message || "Registration failed";
-      throw new Error(message);
+      console.error("Registration error details:", error.response || error);
+
+      if (error.response?.status === 409) {
+        return { success: false, error: ERROR_MESSAGES.EMAIL_EXISTS };
+      }
+
+      const errorMessage =
+        error.response?.data?.messages ||
+        error.message ||
+        ERROR_MESSAGES.REGISTRATION_FAILED;
+      return { success: false, error: errorMessage };
     }
   },
 
+  /**
+   * Logs out user from both client and server
+   * Clears stored token regardless of server response
+   * @returns {Promise<void>}
+   */
   async logout() {
     try {
-      const refreshToken = localStorage.getItem("refreshToken");
-      // Only make the API call if we have a refresh token
-      if (refreshToken) {
-        try {
-          await authApi.post("/auth/logout", { refreshToken });
-        } catch (error) {
-          console.warn("Failed to logout from server:", error);
-          // Continue with local logout even if server logout fails
-        }
-      }
+      await authApi.post(ENDPOINTS.LOGOUT);
+      console.log("Logout successful");
+    } catch (error) {
+      console.warn("Logout from server failed:", error);
     } finally {
-      // Always clear local storage
-      localStorage.removeItem("token");
-      localStorage.removeItem("refreshToken");
+      clearToken();
     }
   },
 
-  async validateToken() {
-    try {
-      const response = await authApi.get("/auth/validate");
-      return response.data.valid;
-    } catch {
-      return false;
-    }
+  /**
+   * Checks if user has valid authentication token
+   * @returns {boolean}
+   */
+  isAuthenticated() {
+    return hasValidToken();
   },
 
-  async getUserProfile() {
-    const response = await authApi.get("/auth/profile");
-    return response.data;
+  /**
+   * Retrieves stored authentication token
+   * @returns {string|null}
+   */
+  getStoredToken() {
+    return getToken();
+  },
+
+  /**
+   * Validates current session token
+   * @returns {Promise<boolean>}
+   */
+  async validateSession() {
+    return hasValidToken();
   },
 };

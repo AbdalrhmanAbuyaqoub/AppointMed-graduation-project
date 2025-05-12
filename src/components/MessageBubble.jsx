@@ -1,41 +1,60 @@
 import React from "react";
-import { Avatar, Text, Group, ActionIcon } from "@mantine/core";
-import { IconUser } from "@tabler/icons-react";
+import { Avatar, Text, Group, Paper, Stack, Box } from "@mantine/core";
+import { IconUser, IconRobot } from "@tabler/icons-react";
 import styles from "../styles/Chat.module.css";
 
 export function MessageBubble({ message }) {
   return (
     <Group
       justify={message.isUser ? "flex-end" : "flex-start"}
-      style={{ width: "100%" }}
+      align="flex-end"
+      className={styles.messageGroup}
     >
       {!message.isUser && (
         <Avatar
-          src="https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-7.png"
+          variant="filled"
           radius="xl"
-          size="sm"
-        />
+          size="md"
+          className={styles.botAvatar}
+        >
+          <IconRobot size="1.2rem" />
+        </Avatar>
       )}
-      <div className={message.isUser ? styles.userBubble : styles.botBubble}>
-        <Text size="sm" c={message.isUser ? "white" : "#333"}>
-          {message.text}
-        </Text>
-        <Text size="xs" c={message.isUser ? "white" : "#666"} ta="right" mt={4}>
+      <Stack
+        gap={4}
+        align={message.isUser ? "flex-end" : "flex-start"}
+        style={{ maxWidth: "70%" }}
+      >
+        <Box className={styles.messageWrapper}>
+          <Paper
+            className={message.isUser ? styles.userBubble : styles.botBubble}
+            shadow="sm"
+            p="sm"
+          >
+            <Text
+              size="sm"
+              style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}
+            >
+              {message.text}
+            </Text>
+          </Paper>
+        </Box>
+        <Text size="xs" c="dimmed" className={styles.timestamp}>
           {message.timestamp.toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
           })}
         </Text>
-      </div>
+      </Stack>
       {message.isUser && (
-        <ActionIcon
+        <Avatar
           variant="filled"
-          size={32}
+          size="md"
           radius="xl"
           className={styles.userAvatar}
         >
-          <IconUser size={"18"} />
-        </ActionIcon>
+          <IconUser size="1.2rem" />
+        </Avatar>
       )}
     </Group>
   );

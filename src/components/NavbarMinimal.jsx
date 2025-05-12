@@ -2,25 +2,41 @@ import { useState } from "react";
 import {
   IconGauge,
   IconHome2,
-  IconLogout,
   IconSettings,
-  IconUser,
-  IconMessage,
+  IconBrandMantine,
+  IconChevronsRight,
 } from "@tabler/icons-react";
-import { Center, Stack, Tooltip, UnstyledButton } from "@mantine/core";
+import {
+  Center,
+  Stack,
+  Tooltip,
+  UnstyledButton,
+  Paper,
+  Space,
+  Group,
+} from "@mantine/core";
 import classes from "../styles/NavbarMinimal.module.css";
-// import appLogo from "../assets/app-logo.svg";
 import { useNavigate } from "react-router-dom";
 
-function NavbarLink({ icon: Icon, label, active, onClick }) {
+function NavbarLink({ icon: Icon, label, active, onClick, expanded }) {
   return (
-    <Tooltip label={label} position="right" transitionProps={{ duration: 0 }}>
+    <Tooltip
+      label={label}
+      radius={"md"}
+      position="right"
+      transitionProps={{ duration: 0 }}
+      disabled={expanded}
+    >
       <UnstyledButton
         onClick={onClick}
         className={classes.link}
         data-active={active || undefined}
+        data-expanded={expanded || undefined}
       >
-        <Icon size={20} stroke={1.5} />
+        <Icon className={classes.linkIcon} size={20} stroke={1.8} />
+        <div className={classes.linkText} data-expanded={expanded || undefined}>
+          {label}
+        </div>
       </UnstyledButton>
     </Tooltip>
   );
@@ -29,12 +45,12 @@ function NavbarLink({ icon: Icon, label, active, onClick }) {
 const mockdata = [
   { icon: IconHome2, label: "Home", path: "/home" },
   { icon: IconGauge, label: "Dashboard", path: "/dashboard" },
-  { icon: IconMessage, label: "Chat", path: "/chat" },
   { icon: IconSettings, label: "Settings", path: "/settings" },
 ];
 
-export function NavbarMinimal() {
+export function NavbarMinimal({ onExpandChange }) {
   const [active, setActive] = useState(0);
+  const [expanded, setExpanded] = useState(false);
   const navigate = useNavigate();
 
   const handleNavigation = (path, index) => {
@@ -42,35 +58,52 @@ export function NavbarMinimal() {
     navigate(path);
   };
 
-  const links = mockdata.map((link, index) => (
-    <NavbarLink
-      {...link}
-      key={link.label}
-      active={index === active}
-      onClick={() => handleNavigation(link.path, index)}
-    />
-  ));
+  const toggleExpand = () => {
+    const newExpanded = !expanded;
+    setExpanded(newExpanded);
+    onExpandChange?.(newExpanded);
+  };
 
   return (
-    <nav className={classes.navbar}>
-      {/* <Center>
-        <img src={appLogo} alt="App Logo" width={30} height={30} />
-      </Center> */}
-
-      <div className={classes.navbarMain}>
-        <Stack justify="center" gap={0}>
-          {links}
-        </Stack>
-      </div>
-
-      <Stack justify="center" gap={0}>
-        <NavbarLink
-          icon={IconUser}
-          label="Login"
-          onClick={() => navigate("/login")}
+    <Paper
+      className={classes.navbar}
+      // data-expanded={expanded || undefined}
+      h={"100%"}
+    >
+      <Group justify="start" ml={10}>
+        <IconBrandMantine
+          className={classes.header}
+          size={35}
+          stroke={1.5}
+          color="var(--mantine-primary-color-filled)"
         />
-        <NavbarLink icon={IconLogout} label="Logout" />
+      </Group>
+
+      <UnstyledButton className={classes.toggleButton} onClick={toggleExpand}>
+        <Center>
+          <IconChevronsRight
+            size={20}
+            style={{
+              transform: expanded ? "rotate(180deg)" : "none",
+              transition: "transform 200ms ease",
+            }}
+          />
+        </Center>
+      </UnstyledButton>
+
+      <Space h={30} />
+
+      <Stack gap={0} className={classes.navbarMain}>
+        {mockdata.map((link, index) => (
+          <NavbarLink
+            {...link}
+            key={link.label}
+            active={index === active}
+            onClick={() => handleNavigation(link.path, index)}
+            expanded={expanded}
+          />
+        ))}
       </Stack>
-    </nav>
+    </Paper>
   );
 }

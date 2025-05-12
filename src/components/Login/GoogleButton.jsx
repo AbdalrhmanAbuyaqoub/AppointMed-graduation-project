@@ -1,4 +1,4 @@
-import { Button } from "@mantine/core";
+import { Button } from '@mantine/core';
 
 export function GoogleButton(props) {
   return (
@@ -8,7 +8,7 @@ export function GoogleButton(props) {
           xmlns="http://www.w3.org/2000/svg"
           preserveAspectRatio="xMidYMid"
           viewBox="0 0 256 262"
-          style={{ width: "18px", height: "18px" }}
+          style={{ width: '18px', height: '18px' }}
         >
           <path
             fill="#4285F4"

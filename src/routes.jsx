@@ -1,9 +1,9 @@
 import React, { Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { MainLayout } from "./layouts/MainLayout";
-import { RouteGuard } from "./components/RouteGuard";
-import { useAuth } from "./context/AuthContext";
+import { RouteGuard } from "./routes/RouteGuard";
 import { ROUTES, LazyComponents } from "./routes/index";
+import PageNotFound from "./pages/PageNotFound";
 
 // Loading fallback component
 const LoadingFallback = () => (
@@ -20,8 +20,6 @@ const LoadingFallback = () => (
 );
 
 export const AppRoutes = () => {
-  const { user } = useAuth();
-
   return (
     <Suspense fallback={<LoadingFallback />}>
       <Routes>
@@ -47,7 +45,7 @@ export const AppRoutes = () => {
         <Route
           path={ROUTES.CHAT}
           element={
-            <RouteGuard requireAuth allowedRoles={["user", "admin"]}>
+            <RouteGuard requireAuth allowedRoles={["patient", "admin"]}>
               <LazyComponents.Chat />
             </RouteGuard>
           }
@@ -74,10 +72,7 @@ export const AppRoutes = () => {
           path="*"
           element={
             <RouteGuard requireAuth>
-              <Navigate
-                to={user?.role === "admin" ? ROUTES.DASHBOARD : ROUTES.CHAT}
-                replace
-              />
+              <PageNotFound />
             </RouteGuard>
           }
         />

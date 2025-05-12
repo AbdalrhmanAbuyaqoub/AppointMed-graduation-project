@@ -1,7 +1,6 @@
 import {
   Anchor,
   Button,
-  Checkbox,
   Divider,
   Group,
   Paper,
@@ -11,27 +10,31 @@ import {
   TextInput,
   Title,
   LoadingOverlay,
+  Select,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { upperFirst, useToggle } from "@mantine/hooks";
+import { useToggle } from "@mantine/hooks";
 import { IconBrandMantine } from "@tabler/icons-react";
 import classes from "../../styles/AuthenticationImage.module.css";
-import React, { useState } from "react";
+import React from "react";
 import { GoogleButton } from "./GoogleButton";
-import { useAuth } from "../../context/AuthContext";
 import { notifications } from "@mantine/notifications";
+import useStore from "../../store/useStore";
+import { useAuthentication } from "../../hooks/useAuthentication";
 
 export function AuthenticationImage() {
   const [type, toggle] = useToggle(["login", "register"]);
-  const { login, register } = useAuth();
-  const [isLoading, setIsLoading] = useState(false);
+  const isLoading = useStore((state) => state.isLoading);
+  const { handleLogin, handleRegister } = useAuthentication();
 
   const form = useForm({
     initialValues: {
       email: "",
-      name: "",
       password: "",
-      terms: true,
+      firstName: "",
+      lastName: "",
+      confirmPassword: "",
+      address: "",
     },
 
     validate: {
@@ -51,54 +54,64 @@ export function AuthenticationImage() {
           return "Password must contain at least one number";
         return null;
       },
-      name: (val) => (type === "register" && !val ? "Name is required" : null),
-      terms: (val) =>
-        type === "register" && !val
-          ? "You must accept terms and conditions"
+      confirmPassword: (val, values) =>
+        type === "register"
+          ? val !== values.password
+            ? "Passwords do not match"
+            : !val
+            ? "Please confirm your password"
+            : null
           : null,
+      firstName: (val) =>
+        type === "register" && !val ? "First Name is required" : null,
+      lastName: (val) =>
+        type === "register" && !val ? "Last Name is required" : null,
+      address: (val) =>
+        type === "register" && !val ? "Address is required" : null,
     },
   });
 
   const handleSubmit = async (values) => {
     try {
-      setIsLoading(true);
       if (type === "login") {
-        await login(values.email, values.password);
-        notifications.show({
-          title: "Welcome back!",
-          message: "You have successfully logged in",
-          color: "green",
-        });
-      } else {
-        await register({
+        const result = await handleLogin({
           email: values.email,
           password: values.password,
-          name: values.name,
+          rememberMe: false,
         });
-        notifications.show({
-          title: "Registration Successful",
-          message: "Please log in with your new account",
-          color: "green",
+
+        if (!result?.success) {
+          throw new Error(result?.error || "Login failed");
+        }
+      } else {
+        const result = await handleRegister({
+          email: values.email,
+          password: values.password,
+          firstName: values.firstName,
+          lastName: values.lastName,
+          confirmPassword: values.confirmPassword,
+          address: values.address,
         });
-        toggle();
-        form.reset();
+
+        if (!result?.success) {
+          throw new Error(result?.error || "Registration failed");
+        }
       }
     } catch (error) {
+      console.error("Form submission error:", error);
       notifications.show({
         title: type === "login" ? "Login Failed" : "Registration Failed",
-        message: error.message || "An unexpected error occurred",
+        message: error.message,
         color: "red",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const handleGoogleAuth = async () => {
     notifications.show({
-      title: "Not Implemented",
-      message: "Google authentication is not implemented yet",
-      color: "yellow",
+      title: "Google Authentication",
+      message:
+        "Google authentication is not implemented yet. Please use email/password login.",
     });
   };
 
@@ -110,9 +123,14 @@ export function AuthenticationImage() {
           <IconBrandMantine
             size={42}
             stroke={1.5}
-            color="var(--mantine-color-blue-filled)"
+            color="var(--mantine-primary-color-filled)"
           />
-          <Text className={classes.logoText}>Mantine</Text>
+          <Text
+            c="var(--mantine-primary-color-filled)"
+            className={classes.logoText}
+          >
+            Mantine
+          </Text>
         </div>
         <div className={classes.formContainer}>
           <Title order={2} className={classes.title}>
@@ -134,18 +152,52 @@ export function AuthenticationImage() {
           <form onSubmit={form.onSubmit(handleSubmit)}>
             <Stack>
               {type === "register" && (
-                <TextInput
-                  required
-                  label="Name"
-                  placeholder="Your name"
-                  value={form.values.name}
-                  onChange={(event) =>
-                    form.setFieldValue("name", event.currentTarget.value)
-                  }
-                  error={form.errors.name}
-                  radius="md"
-                  disabled={isLoading}
-                />
+                <>
+                  <Group grow>
+                    <TextInput
+                      required
+                      label="First Name"
+                      placeholder="Your First Name"
+                      value={form.values.firstName}
+                      onChange={(event) =>
+                        form.setFieldValue(
+                          "firstName",
+                          event.currentTarget.value
+                        )
+                      }
+                      error={form.errors.firstName}
+                      radius="md"
+                      disabled={isLoading}
+                    />
+                    <TextInput
+                      required
+                      label="Last Name"
+                      placeholder="Your Last Name"
+                      value={form.values.lastName}
+                      onChange={(event) =>
+                        form.setFieldValue(
+                          "lastName",
+                          event.currentTarget.value
+                        )
+                      }
+                      error={form.errors.lastName}
+                      radius="md"
+                      disabled={isLoading}
+                    />
+                  </Group>
+                  <TextInput
+                    required
+                    label="Address"
+                    placeholder="Enter your address"
+                    value={form.values.address}
+                    onChange={(event) =>
+                      form.setFieldValue("address", event.currentTarget.value)
+                    }
+                    error={form.errors.address}
+                    radius="md"
+                    disabled={isLoading}
+                  />
+                </>
               )}
 
               <TextInput
@@ -175,13 +227,19 @@ export function AuthenticationImage() {
               />
 
               {type === "register" && (
-                <Checkbox
-                  label="I accept terms and conditions"
-                  checked={form.values.terms}
+                <PasswordInput
+                  required
+                  label="Confirm Password"
+                  placeholder="Confirm your password"
+                  value={form.values.confirmPassword}
                   onChange={(event) =>
-                    form.setFieldValue("terms", event.currentTarget.checked)
+                    form.setFieldValue(
+                      "confirmPassword",
+                      event.currentTarget.value
+                    )
                   }
-                  error={form.errors.terms}
+                  error={form.errors.confirmPassword}
+                  radius="md"
                   disabled={isLoading}
                 />
               )}
@@ -220,7 +278,7 @@ export function AuthenticationImage() {
                       fw={500}
                       disabled={isLoading}
                     >
-                      Create one
+                      Sign up
                     </Anchor>
                   </>
                 )}

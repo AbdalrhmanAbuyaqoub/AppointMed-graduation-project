@@ -1,40 +1,31 @@
 import React from "react";
 import { Menu, ActionIcon } from "@mantine/core";
-import { IconUser, IconLogout, IconSettings } from "@tabler/icons-react";
+import { IconUser } from "@tabler/icons-react";
 
-export function ProfileMenu() {
+export function ProfileMenu({ menuItems = [], label }) {
   return (
-    <div style={{ position: "fixed", top: 20, left: 20, zIndex: 1000 }}>
-      <Menu shadow="md" width={200} position="bottom-start">
-        <Menu.Target>
-          <ActionIcon
-            variant="filled"
-            size={40}
-            radius="xl"
-            style={{
-              backgroundColor: "#00e5c9",
-              color: "white",
-              "&:hover": {
-                backgroundColor: "#00d1b8",
-              },
-            }}
-          >
-            <IconUser size={24} />
-          </ActionIcon>
-        </Menu.Target>
+    <Menu shadow="md" width={200} position="bottom-end">
+      <Menu.Target>
+        <ActionIcon variant="filled" size={40} radius="xl">
+          <IconUser size={24} />
+        </ActionIcon>
+      </Menu.Target>
 
-        <Menu.Dropdown>
-          <Menu.Label>Application</Menu.Label>
-          <Menu.Item leftSection={<IconUser size={14} />}>Profile</Menu.Item>
-          <Menu.Item leftSection={<IconSettings size={14} />}>
-            Settings
+      <Menu.Dropdown>
+        <Menu.Label>{label}</Menu.Label>
+
+        {menuItems.map((item, index) => (
+          <Menu.Item
+            key={index}
+            leftSection={item.icon}
+            onClick={item.onClick}
+            color={item.color}
+            // style={{ fontSize: "16px" }}
+          >
+            {item.label}
           </Menu.Item>
-          <Menu.Divider />
-          <Menu.Item leftSection={<IconLogout size={14} />} color="red">
-            Logout
-          </Menu.Item>
-        </Menu.Dropdown>
-      </Menu>
-    </div>
+        ))}
+      </Menu.Dropdown>
+    </Menu>
   );
 }

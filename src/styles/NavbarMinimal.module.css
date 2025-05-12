@@ -1,16 +1,15 @@
 .navbar {
-  width: 80px;
-  height: 750px;
+  width: 100%;
   padding: var(--mantine-spacing-md);
   display: flex;
   flex-direction: column;
-  border-right: 1px solid
-    light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+  transition: width 0.2s ease;
+  position: relative;
+  overflow: visible;
 }
 
-.navbarMain {
-  flex: 1;
-  margin-top: 50px;
+.navbar[data-expanded] {
+  width: 240px;
 }
 
 .link {
@@ -19,8 +18,16 @@
   border-radius: var(--mantine-radius-md);
   display: flex;
   align-items: center;
-  justify-content: center;
-  color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-dark-0));
+  padding: var(--mantine-spacing-xs);
+
+  color: var(--mantine-color-gray-8);
+  transition: width 0.2s ease, background-color 0.2s ease;
+  position: relative;
+  overflow: hidden;
+
+  &[data-expanded] {
+    width: 100%;
+  }
 
   &:hover {
     background-color: light-dark(
@@ -32,8 +39,56 @@
   &[data-active] {
     &,
     &:hover {
-      background-color: var(--mantine-color-blue-light);
-      color: var(--mantine-color-blue-light-color);
+      background-color: var(--mantine-primary-color-light);
+      color: var(--mantine-primary-color-filled);
     }
   }
+}
+
+.linkIcon {
+  min-width: 20px;
+  margin-right: var(--mantine-spacing-sm);
+  margin-left: 5px;
+}
+
+.linkText {
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+  margin-left: var(--mantine-spacing-sm);
+  position: absolute;
+  left: 45px;
+  font-size: var(--mantine-font-size-sm);
+}
+
+.linkText[data-expanded] {
+  opacity: 1;
+  visibility: visible;
+}
+
+.toggleButton {
+  position: absolute;
+  right: -12px;
+  top: 10%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  color: var(--mantine-color-gray-8);
+  background-color: var(--mantine-color-white);
+  cursor: pointer;
+  box-shadow: var(--mantine-shadow-sm);
+  z-index: 1;
+}
+
+.toggleButton:hover {
+  background-color: light-dark(
+    var(--mantine-color-gray-0),
+    var(--mantine-color-dark-5)
+  );
+}
+
+.navbarMain {
+  flex: 1;
 }
