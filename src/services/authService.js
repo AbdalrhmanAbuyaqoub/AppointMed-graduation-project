@@ -214,7 +214,7 @@ export const authService = {
    */
   async logout() {
     try {
-      await authApi.post(ENDPOINTS.LOGOUT);
+      await authApi.get(ENDPOINTS.LOGOUT);
       console.log("Logout successful");
     } catch (error) {
       console.warn("Logout from server failed:", error);

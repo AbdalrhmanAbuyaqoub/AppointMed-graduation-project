@@ -1,18 +1,29 @@
 import React from "react";
-import { Menu, ActionIcon } from "@mantine/core";
-import { IconUser } from "@tabler/icons-react";
+import { Group, Menu, ActionIcon } from "@mantine/core";
+import { IconUser, IconCaretDownFilled } from "@tabler/icons-react";
 
 export function ProfileMenu({ menuItems = [], label }) {
   return (
-    <Menu shadow="md" width={200} position="bottom-end">
+    <Menu radius={"md"} shadow="md" width={250} position="bottom-end">
       <Menu.Target>
-        <ActionIcon variant="filled" size={40} radius="xl">
-          <IconUser size={24} />
-        </ActionIcon>
+        <Group gap={4}>
+          <ActionIcon
+            c={"black"}
+            color="gray.3"
+            variant="filled"
+            size={40}
+            radius="xl"
+          >
+            <IconUser size={24} />
+          </ActionIcon>
+          <IconCaretDownFilled size={20} />
+        </Group>
       </Menu.Target>
 
       <Menu.Dropdown>
-        <Menu.Label>{label}</Menu.Label>
+        <Menu.Label fw={"600"} c={"black"} fz={"md"}>
+          {label}
+        </Menu.Label>
 
         {menuItems.map((item, index) => (
           <Menu.Item

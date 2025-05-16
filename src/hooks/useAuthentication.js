@@ -16,7 +16,6 @@
 import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { getDefaultRoute, ROUTES } from "../routes/index";
-import { notifications } from "@mantine/notifications";
 import useAuthStore from "../store/useAuthStore";
 
 // Selector functions for store values
@@ -61,24 +60,9 @@ export function useAuthentication() {
         const redirectPath = getDefaultRoute(currentUser.role);
         navigate(redirectPath);
 
-        notifications.show({
-          title: "Welcome back!",
-          message: `Logged in successfully as ${
-            currentUser.name || currentUser.username
-          }`,
-          color: "green",
-          autoClose: 3000,
-        });
-
         return { success: true, user: currentUser };
       } catch (error) {
         console.error("Login error:", error);
-        notifications.show({
-          title: "Authentication Failed",
-          message: error.message,
-          color: "red",
-        });
-
         return { success: false, error: error.message };
       }
     },
@@ -104,20 +88,8 @@ export function useAuthentication() {
         const redirectPath = getDefaultRoute(currentUser.role);
         navigate(redirectPath);
 
-        notifications.show({
-          title: "Welcome!",
-          message: "Registration successful",
-          color: "green",
-        });
-
         return { success: true, user: currentUser };
       } catch (error) {
-        notifications.show({
-          title: "Registration Failed",
-          message: error.message,
-          color: "red",
-        });
-
         return { success: false, error: error.message };
       }
     },
@@ -134,20 +106,8 @@ export function useAuthentication() {
       }
 
       navigate(ROUTES.LOGIN, { state: { isLogout: true } });
-      notifications.show({
-        title: "Logged out",
-        message: "You have been successfully logged out",
-        color: "blue",
-      });
-
       return { success: true };
     } catch (error) {
-      notifications.show({
-        title: "Logout Failed",
-        message: error.message,
-        color: "red",
-      });
-
       return { success: false, error: error.message };
     }
   }, [logoutAction, navigate]);

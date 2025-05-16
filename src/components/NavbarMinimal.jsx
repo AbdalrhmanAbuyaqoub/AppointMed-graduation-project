@@ -1,109 +1,148 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
-  IconGauge,
-  IconHome2,
-  IconSettings,
   IconBrandMantine,
   IconChevronsRight,
+  IconCalendarWeek,
+  IconLayoutGrid,
+  IconBuildingHospital,
+  IconStethoscope,
 } from "@tabler/icons-react";
 import {
   Center,
   Stack,
   Tooltip,
-  UnstyledButton,
-  Paper,
-  Space,
+  AppShell,
   Group,
+  Card,
+  Drawer,
+  Button,
+  Space,
 } from "@mantine/core";
-import classes from "../styles/NavbarMinimal.module.css";
-import { useNavigate } from "react-router-dom";
+import { useHover } from "@mantine/hooks";
+import { useNavigate, useLocation } from "react-router-dom";
+import { theme } from "../theme";
 
 function NavbarLink({ icon: Icon, label, active, onClick, expanded }) {
+  const { hovered, ref } = useHover();
+
   return (
     <Tooltip
       label={label}
-      radius={"md"}
+      radius="md"
       position="right"
       transitionProps={{ duration: 0 }}
       disabled={expanded}
     >
-      <UnstyledButton
+      <Card
+        ref={ref}
         onClick={onClick}
-        className={classes.link}
-        data-active={active || undefined}
-        data-expanded={expanded || undefined}
+        w={expanded ? "100%" : 50}
+        h={50}
+        px="xs"
+        radius="md"
+        bg={
+          active
+            ? "var(--mantine-primary-color-light)"
+            : hovered
+            ? "var(--mantine-color-gray-1)"
+            : "transparent"
+        }
+        c={active ? theme.primaryColor : "gray.7"}
       >
-        <Icon className={classes.linkIcon} size={20} stroke={1.8} />
-        <div className={classes.linkText} data-expanded={expanded || undefined}>
+        <Group>
+          <Icon size={20} stroke={1.8} />
           {label}
-        </div>
-      </UnstyledButton>
+        </Group>
+      </Card>
     </Tooltip>
   );
 }
 
-const mockdata = [
-  { icon: IconHome2, label: "Home", path: "/home" },
-  { icon: IconGauge, label: "Dashboard", path: "/dashboard" },
-  { icon: IconSettings, label: "Settings", path: "/settings" },
+const navLinks = [
+  { icon: IconLayoutGrid, label: "Dashboard", path: "/dashboard" },
+  { icon: IconCalendarWeek, label: "Appointments", path: "/appointments" },
+  { icon: IconBuildingHospital, label: "Clinics", path: "/clinics" },
+  { icon: IconStethoscope, label: "Doctors", path: "/doctors" },
 ];
 
-export function NavbarMinimal({ onExpandChange }) {
-  const [active, setActive] = useState(0);
-  const [expanded, setExpanded] = useState(false);
+export function NavbarMinimal({
+  expanded,
+  onExpandChange,
+  isMobile,
+  mobileOpened,
+}) {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { hovered: toggleHovered, ref: toggleRef } = useHover();
 
-  const handleNavigation = (path, index) => {
-    setActive(index);
+  const handleNavigation = (path) => {
     navigate(path);
+    if (isMobile) {
+      onExpandChange?.(false);
+    }
   };
 
   const toggleExpand = () => {
-    const newExpanded = !expanded;
-    setExpanded(newExpanded);
-    onExpandChange?.(newExpanded);
+    onExpandChange?.(!expanded);
   };
 
-  return (
-    <Paper
-      className={classes.navbar}
-      // data-expanded={expanded || undefined}
-      h={"100%"}
-    >
-      <Group justify="start" ml={10}>
-        <IconBrandMantine
-          className={classes.header}
-          size={35}
-          stroke={1.5}
-          color="var(--mantine-primary-color-filled)"
+  const isExpanded = isMobile ? mobileOpened : expanded;
+
+  const navigationContent = (
+    <Stack gap={4}>
+      {navLinks.map((link) => (
+        <NavbarLink
+          {...link}
+          key={link.label}
+          active={location.pathname === link.path}
+          onClick={() => handleNavigation(link.path)}
+          expanded={isExpanded}
         />
-      </Group>
+      ))}
+    </Stack>
+  );
 
-      <UnstyledButton className={classes.toggleButton} onClick={toggleExpand}>
-        <Center>
-          <IconChevronsRight
-            size={20}
-            style={{
-              transform: expanded ? "rotate(180deg)" : "none",
-              transition: "transform 200ms ease",
-            }}
-          />
-        </Center>
-      </UnstyledButton>
-
+  const navContent = (
+    <Stack>
+      <IconBrandMantine size={35} color={theme.primaryColor} />
       <Space h={30} />
+      {navigationContent}
+    </Stack>
+  );
 
-      <Stack gap={0} className={classes.navbarMain}>
-        {mockdata.map((link, index) => (
-          <NavbarLink
-            {...link}
-            key={link.label}
-            active={index === active}
-            onClick={() => handleNavigation(link.path, index)}
-            expanded={expanded}
-          />
-        ))}
-      </Stack>
-    </Paper>
+  if (isMobile) {
+    return (
+      <Drawer
+        opened={mobileOpened}
+        onClose={() => onExpandChange?.(false)}
+        size={240}
+        withCloseButton
+        transitionProps={{ transition: "slide-right" }}
+      >
+        {navContent}
+      </Drawer>
+    );
+  }
+
+  return (
+    <AppShell.Navbar w={expanded ? 240 : 80} p="md">
+      {navContent}
+      <Center>
+        <Button
+          ref={toggleRef}
+          onClick={toggleExpand}
+          pos="absolute"
+          right={-12}
+          p={0}
+          m={0}
+          top="2%"
+          c="gray.7"
+          radius="xl"
+          bg={toggleHovered ? "gray.1" : "white"}
+        >
+          <IconChevronsRight size={20} />
+        </Button>
+      </Center>
+    </AppShell.Navbar>
   );
 }

@@ -1,7 +1,6 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { memo, useEffect, useState } from "react";
 import { LoadingOverlay } from "@mantine/core";
-import { notifications } from "@mantine/notifications";
 import useAuthStore from "../store/useAuthStore";
 import { ROUTES } from "./index";
 
@@ -38,14 +37,6 @@ export const RouteGuard = memo(
       if (isAuthenticated) {
         // Get default route based on user role
         const defaultRoute = getDefaultRouteForRole(user?.role);
-
-        if (location.pathname !== ROUTES.LOGIN) {
-          notifications.show({
-            title: "Already Authenticated",
-            message: "Redirecting to dashboard",
-            color: "blue",
-          });
-        }
         return <Navigate to={defaultRoute} replace />;
       }
       return children;
@@ -53,13 +44,6 @@ export const RouteGuard = memo(
 
     // Handle authentication check
     if (!isAuthenticated) {
-      if (!location.state?.isLogout) {
-        notifications.show({
-          title: "Authentication Required",
-          message: "Please log in to access this page",
-          color: "yellow",
-        });
-      }
       return (
         <Navigate
           to={ROUTES.LOGIN}
@@ -79,12 +63,6 @@ export const RouteGuard = memo(
       if (!hasAccess) {
         // Use custom redirectPath if provided, otherwise use default route
         const redirectTo = redirectPath || getDefaultRouteForRole(userRole);
-
-        notifications.show({
-          title: "Access Denied",
-          message: "You don't have permission to access this page",
-          color: "red",
-        });
         return <Navigate to={redirectTo} replace />;
       }
     }
@@ -99,11 +77,11 @@ const getDefaultRouteForRole = (role) => {
     case "patient":
       return ROUTES.CHAT;
     case "admin":
-      return ROUTES.HOME;
+      return ROUTES.DASHBOARD;
     case "doctor":
       return ROUTES.DASHBOARD;
     default:
-      return ROUTES.HOME;
+      return ROUTES.DASHBOARD;
   }
 };
 

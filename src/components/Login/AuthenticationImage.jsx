@@ -18,7 +18,6 @@ import { IconBrandMantine } from "@tabler/icons-react";
 import classes from "../../styles/AuthenticationImage.module.css";
 import React from "react";
 import { GoogleButton } from "./GoogleButton";
-import { notifications } from "@mantine/notifications";
 import useStore from "../../store/useStore";
 import { useAuthentication } from "../../hooks/useAuthentication";
 
@@ -99,20 +98,11 @@ export function AuthenticationImage() {
       }
     } catch (error) {
       console.error("Form submission error:", error);
-      notifications.show({
-        title: type === "login" ? "Login Failed" : "Registration Failed",
-        message: error.message,
-        color: "red",
-      });
     }
   };
 
-  const handleGoogleAuth = async () => {
-    notifications.show({
-      title: "Google Authentication",
-      message:
-        "Google authentication is not implemented yet. Please use email/password login.",
-    });
+  const handleGoogleAuth = () => {
+    console.log("Google authentication not implemented yet");
   };
 
   return (

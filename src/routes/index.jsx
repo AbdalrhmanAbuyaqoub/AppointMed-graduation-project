@@ -10,9 +10,12 @@ export const ROUTES = {
   CHAT: "/chat",
 
   // Admin routes
-  HOME: "/home",
   DASHBOARD: "/dashboard",
-  SETTINGS: "/settings",
+  APPOINTMENTS: "/appointments",
+  CLINICS: "/clinics",
+  CLINIC_DETAILS: "/clinics/:id",
+  DOCTORS: "/doctors",
+  DOCTOR_DETAILS: "/doctors/:id",
 };
 
 // Lazy-loaded components with better naming
@@ -25,9 +28,12 @@ export const LazyComponents = {
   Chat: lazy(() => import("../pages/Chat")),
 
   // Admin pages
-  Home: lazy(() => import("../pages/Home")),
   Dashboard: lazy(() => import("../pages/Dashboard")),
-  Settings: lazy(() => import("../pages/Settings")),
+  Appointments: lazy(() => import("../pages/Appointments")),
+  Clinics: lazy(() => import("../pages/Clinics")),
+  ClinicDetails: lazy(() => import("../pages/ClinicDetails")),
+  Doctors: lazy(() => import("../pages/Doctors")),
+  DoctorDetails: lazy(() => import("../pages/DoctorDetails")),
 };
 
 // Get default route based on user role
@@ -36,10 +42,10 @@ export const getDefaultRoute = (role) => {
     case "patient":
       return ROUTES.CHAT;
     case "admin":
-      return ROUTES.HOME;
+      return ROUTES.DASHBOARD;
     case "doctor":
       return ROUTES.DASHBOARD;
     default:
-      return ROUTES.HOME;
+      return ROUTES.DASHBOARD;
   }
 };

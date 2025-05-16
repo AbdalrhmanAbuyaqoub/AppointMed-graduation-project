@@ -2,8 +2,10 @@ import React, { Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { MainLayout } from "./layouts/MainLayout";
 import { RouteGuard } from "./routes/RouteGuard";
-import { ROUTES, LazyComponents } from "./routes/index";
+import { ROUTES, LazyComponents } from "./routes/index.jsx";
 import PageNotFound from "./pages/PageNotFound";
+import Clinics from "./pages/Clinics";
+import ClinicDetails from "./pages/ClinicDetails";
 
 // Loading fallback component
 const LoadingFallback = () => (
@@ -59,12 +61,21 @@ export const AppRoutes = () => {
             </RouteGuard>
           }
         >
-          <Route path={ROUTES.HOME} element={<LazyComponents.Home />} />
           <Route
             path={ROUTES.DASHBOARD}
             element={<LazyComponents.Dashboard />}
           />
-          <Route path={ROUTES.SETTINGS} element={<LazyComponents.Settings />} />
+          <Route
+            path={ROUTES.APPOINTMENTS}
+            element={<LazyComponents.Appointments />}
+          />
+          <Route path={ROUTES.CLINICS} element={<Clinics />} />
+          <Route path={ROUTES.CLINIC_DETAILS} element={<ClinicDetails />} />
+          <Route path={ROUTES.DOCTORS} element={<LazyComponents.Doctors />} />
+          <Route
+            path={ROUTES.DOCTOR_DETAILS}
+            element={<LazyComponents.DoctorDetails />}
+          />
         </Route>
 
         {/* Default route */}
