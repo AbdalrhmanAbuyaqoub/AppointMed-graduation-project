@@ -235,12 +235,19 @@ function decodeToken(token) {
     );
 
     const tokenData = JSON.parse(jsonPayload);
+
+    // Extract basic information from token
+    // Note: Full user data (firstName, lastName, address, phoneNumber)
+    // comes from the login response, not from the token
     return {
       username: tokenData.unique_name,
       role:
         tokenData.role === "Patient"
           ? "patient"
           : tokenData.role?.toLowerCase(),
+      // Add any other fields that are actually in the token
+      userId:
+        tokenData.nameid || tokenData.userId || tokenData.sub || tokenData.id,
     };
   } catch (error) {
     console.error("Failed to decode token:", error);

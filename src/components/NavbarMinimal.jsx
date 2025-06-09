@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import {
   IconBrandMantine,
   IconChevronsRight,
-  IconCalendarWeek,
+  IconCalendarEvent,
   IconLayoutGrid,
   IconBuildingHospital,
   IconStethoscope,
@@ -13,10 +13,12 @@ import {
   Tooltip,
   AppShell,
   Group,
+  Container,
   Card,
   Drawer,
   Button,
   Space,
+  Paper,
 } from "@mantine/core";
 import { useHover } from "@mantine/hooks";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -38,7 +40,7 @@ function NavbarLink({ icon: Icon, label, active, onClick, expanded }) {
         onClick={onClick}
         w={expanded ? "100%" : 50}
         h={50}
-        px="xs"
+        p="0"
         radius="md"
         bg={
           active
@@ -47,11 +49,15 @@ function NavbarLink({ icon: Icon, label, active, onClick, expanded }) {
             ? "var(--mantine-color-gray-1)"
             : "transparent"
         }
-        c={active ? theme.primaryColor : "gray.7"}
+        c={active ? theme.primaryColor : "black"}
       >
-        <Group>
-          <Icon size={20} stroke={1.8} />
-          {label}
+        <Group
+          h={"100%"}
+          justify={expanded ? "flex-start" : "center"}
+          pl={expanded ? 13 : 0}
+        >
+          <Icon size={24} stroke={1.9} />
+          {expanded && label}
         </Group>
       </Card>
     </Tooltip>
@@ -60,7 +66,7 @@ function NavbarLink({ icon: Icon, label, active, onClick, expanded }) {
 
 const navLinks = [
   { icon: IconLayoutGrid, label: "Dashboard", path: "/dashboard" },
-  { icon: IconCalendarWeek, label: "Appointments", path: "/appointments" },
+  { icon: IconCalendarEvent, label: "Appointments", path: "/appointments" },
   { icon: IconBuildingHospital, label: "Clinics", path: "/clinics" },
   { icon: IconStethoscope, label: "Doctors", path: "/doctors" },
 ];
@@ -104,7 +110,9 @@ export function NavbarMinimal({
 
   const navContent = (
     <Stack>
-      <IconBrandMantine size={35} color={theme.primaryColor} />
+      <Center>
+        <IconBrandMantine size={35} color={theme.primaryColor} />
+      </Center>
       <Space h={30} />
       {navigationContent}
     </Stack>

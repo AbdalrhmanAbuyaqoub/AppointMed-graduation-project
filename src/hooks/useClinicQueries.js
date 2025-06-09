@@ -29,6 +29,21 @@ export function useClinicQueries(clinicId) {
     enabled: !!clinicId, // Only run if clinicId is provided
   });
 
+  // Extract all doctors from all clinics (for the general doctors list)
+  const allDoctors = (clinicsQuery.data || []).reduce((acc, clinic) => {
+    if (clinic.doctors) {
+      return [
+        ...acc,
+        ...clinic.doctors.map((doctor) => ({
+          ...doctor,
+          clinicId: clinic.id,
+          clinicName: clinic.name,
+        })),
+      ];
+    }
+    return acc;
+  }, []);
+
   // Mutation for creating a clinic
   const createClinicMutation = useMutation({
     mutationFn: (data) => clinicsService.createClinic(data),
@@ -56,6 +71,9 @@ export function useClinicQueries(clinicId) {
       // Invalidate both the clinics list and the specific clinic
       queryClient.invalidateQueries({ queryKey: ["clinics"] });
       queryClient.invalidateQueries({ queryKey: ["clinic", variables.id] });
+      queryClient.invalidateQueries({
+        queryKey: ["clinic-doctors", variables.id],
+      });
       notifications.show({
         title: "Success",
         message: "Clinic updated successfully",
@@ -168,7 +186,7 @@ export function useClinicQueries(clinicId) {
     // Queries
     clinics: clinicsQuery.data || [], // Ensure we always return an array
     clinic: clinicQuery.data,
-    doctors: doctorsQuery.data || [], // Ensure we always return an array for doctors
+    doctors: clinicId ? doctorsQuery.data || [] : allDoctors, // Use clinic-specific doctors if clinicId is provided, otherwise use all doctors
     isLoading:
       clinicsQuery.isLoading || clinicQuery.isLoading || doctorsQuery.isLoading,
     isError:

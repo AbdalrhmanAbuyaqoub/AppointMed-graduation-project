@@ -3,6 +3,26 @@ import { Avatar, Text, Group, Paper, Stack, Box } from "@mantine/core";
 import { IconUser, IconRobot } from "@tabler/icons-react";
 import styles from "../styles/Chat.module.css";
 
+// Helper to manually parse <b> tags
+function parseBold(text) {
+  const parts = [];
+  let lastIndex = 0;
+  const regex = /<b>(.*?)<\/b>/gi;
+  let match;
+  let key = 0;
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(text.slice(lastIndex, match.index));
+    }
+    parts.push(<b key={key++}>{match[1]}</b>);
+    lastIndex = regex.lastIndex;
+  }
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex));
+  }
+  return parts;
+}
+
 export function MessageBubble({ message }) {
   return (
     <Group
@@ -35,7 +55,7 @@ export function MessageBubble({ message }) {
               size="sm"
               style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}
             >
-              {message.text}
+              {parseBold(message.text)}
             </Text>
           </Paper>
         </Box>

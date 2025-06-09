@@ -30,7 +30,12 @@ api.interceptors.request.use(
 /**
  * @typedef {Object} Doctor
  * @property {number} id - The doctor's ID
- * @property {string} name - The name of the doctor
+ * @property {string} name - The doctor's full name (from API response)
+ * @property {string} email - The doctor's email
+ * @property {string} address - The doctor's address
+ * @property {string} phoneNumber - The doctor's phone number
+ * @property {number} clinicId - The clinic ID the doctor belongs to
+ * @property {string} clinicName - The clinic name
  */
 
 /**
@@ -133,7 +138,8 @@ export const clinicsService = {
    * Add a doctor to a clinic
    * @param {Object} data
    * @param {number} data.clinicId - The ID of the clinic
-   * @param {string} data.name - The name of the doctor
+   * @param {string} data.firstName - The first name of the doctor
+   * @param {string} data.lastName - The last name of the doctor
    * @param {string} data.email - The email of the doctor
    * @param {string} data.address - The address of the doctor
    * @param {string} data.phoneNumber - The phone number of the doctor
@@ -166,14 +172,16 @@ export const clinicsService = {
    * Update a doctor's information
    * @param {Object} data
    * @param {number} data.id - The doctor ID
-   * @param {string} data.name - The doctor's name
+   * @param {string} data.firstName - The doctor's first name
+   * @param {string} data.lastName - The doctor's last name
    * @param {string} data.email - The doctor's email
+   * @param {string} data.address - The doctor's address
    * @param {string} data.phoneNumber - The doctor's phone number
    * @returns {Promise<void>}
    */
   updateDoctor: async (data) => {
     try {
-      await api.put(`/Clinic/update-doctor/${data.id}`, data);
+      await api.put("/Clinic/update-doctor", data);
       return;
     } catch (error) {
       console.error("Error updating doctor:", error);
@@ -196,6 +204,84 @@ export const clinicsService = {
       console.error("Error deleting doctor:", error);
       throw new Error(
         error.response?.data?.message || "Failed to delete doctor"
+      );
+    }
+  },
+
+  /**
+   * Update working hours for a doctor
+   * @param {Object[]} workingHours - Array of working hours
+   * @param {number} workingHours[].doctorId - The doctor ID
+   * @param {number} workingHours[].dayOfWeek - Day of the week (0-6, where 0 is Sunday)
+   * @param {Object} workingHours[].startTime - Start time object
+   * @param {number} workingHours[].startTime.ticks - Start time in ticks
+   * @param {Object} workingHours[].endTime - End time object
+   * @param {number} workingHours[].endTime.ticks - End time in ticks
+   * @returns {Promise<void>}
+   */
+  updateDoctorWorkingHours: async (workingHours) => {
+    try {
+      // Log the request payload
+      console.log(
+        "Updating working hours with payload:",
+        JSON.stringify(workingHours)
+      );
+
+      const response = await api.put(
+        "/Clinic/update-working-hours-doctor",
+        workingHours
+      );
+
+      // Log the response
+      console.log("Server response:", response.data);
+
+      return response.data;
+    } catch (error) {
+      console.error("Error updating doctor working hours:", error);
+      if (error.response) {
+        console.error("Server error response:", error.response.data);
+      }
+      throw new Error(
+        error.response?.data?.message || "Failed to update working hours"
+      );
+    }
+  },
+
+  /**
+   * Add working hours for a doctor (create new)
+   * @param {Object[]} workingHours - Array of working hours
+   * @param {number} workingHours[].doctorId - The doctor ID
+   * @param {number} workingHours[].dayOfWeek - Day of the week (0-6, where 0 is Sunday)
+   * @param {Object} workingHours[].startTime - Start time object
+   * @param {number} workingHours[].startTime.ticks - Start time in ticks
+   * @param {Object} workingHours[].endTime - End time object
+   * @param {number} workingHours[].endTime.ticks - End time in ticks
+   * @returns {Promise<void>}
+   */
+  createDoctorWorkingHours: async (workingHours) => {
+    try {
+      // Log the request payload
+      console.log(
+        "Adding working hours with payload:",
+        JSON.stringify(workingHours)
+      );
+
+      const response = await api.post(
+        "/Clinic/add-working-hours-doctor",
+        workingHours
+      );
+
+      // Log the response
+      console.log("Server response:", response.data);
+
+      return response.data;
+    } catch (error) {
+      console.error("Error adding doctor working hours:", error);
+      if (error.response) {
+        console.error("Server error response:", error.response.data);
+      }
+      throw new Error(
+        error.response?.data?.message || "Failed to add working hours"
       );
     }
   },

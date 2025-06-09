@@ -6,7 +6,7 @@ export function ProfileMenu({ menuItems = [], label }) {
   return (
     <Menu radius={"md"} shadow="md" width={250} position="bottom-end">
       <Menu.Target>
-        <Group gap={4}>
+        <Group gap={4} style={{ cursor: "pointer" }}>
           <ActionIcon
             c={"black"}
             color="gray.3"

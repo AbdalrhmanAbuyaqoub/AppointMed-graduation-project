@@ -71,28 +71,27 @@ function Clinics() {
   return (
     <Container pt={20} maw={1232} fluid>
       <Stack>
-        <Stack gap={40} mb={50}>
-          <Title order={2}>Clinics Management</Title>
-          <Group justify="space-between">
-            <TextInput
-              placeholder="Search clinics..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              leftSection={<IconSearch size={16} />}
-              style={{ flex: 1, maxWidth: 300 }}
-              size="md"
-              radius="md"
-            />
-            <Button
-              size="md"
-              leftSection={<IconPlus size={20} />}
-              onClick={() => setIsModalOpen(true)}
-              radius="md"
-            >
-              Add New Clinic
-            </Button>
-          </Group>
-        </Stack>
+        <Title order={2}>Clinics Management</Title>
+        <Group mt={60} justify="space-between">
+          <TextInput
+            placeholder="Search clinics..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            leftSection={<IconSearch size={16} />}
+            style={{ flex: 1, maxWidth: 300 }}
+            size="lg"
+            radius="md"
+          />
+          <Button
+            size="lg"
+            radius="xl"
+            variant="outline"
+            leftSection={<IconPlus size={20} />}
+            onClick={() => setIsModalOpen(true)}
+          >
+            Add New Clinic
+          </Button>
+        </Group>
 
         <Divider mb={20} />
 
@@ -101,7 +100,7 @@ function Clinics() {
         ) : filteredClinics.length === 0 ? (
           renderEmptyState("No clinics found matching your search.")
         ) : (
-          <SimpleGrid cols={{ base: 1, sm: 2, md: 3, lg: 3 }} spacing="xl">
+          <SimpleGrid cols={{ base: 1, sm: 2, md: 2, lg: 3 }} spacing="xl">
             {filteredClinics.map((clinic) => (
               <ClinicCard
                 key={clinic.id}

@@ -29,7 +29,8 @@ function CreateDoctorDrawer({
 
     // Validate required fields
     if (
-      !doctorData.name.trim() ||
+      !doctorData.firstName.trim() ||
+      !doctorData.lastName.trim() ||
       !doctorData.email.trim() ||
       !doctorData.phoneNumber.trim()
     ) {
@@ -39,7 +40,8 @@ function CreateDoctorDrawer({
     try {
       await createDoctor({
         clinicId: clinicId || parseInt(doctorData.selectedClinic),
-        name: doctorData.name.trim(),
+        firstName: doctorData.firstName.trim(),
+        lastName: doctorData.lastName.trim(),
         email: doctorData.email.trim(),
         address: doctorData.address.trim(),
         phoneNumber: doctorData.phoneNumber.trim(),
@@ -47,7 +49,8 @@ function CreateDoctorDrawer({
 
       // Reset form and close drawer
       setDoctorData({
-        name: "",
+        firstName: "",
+        lastName: "",
         email: "",
         address: "",
         phoneNumber: "",
@@ -80,14 +83,26 @@ function CreateDoctorDrawer({
     >
       <Stack gap="md" p="md">
         <TextInput
-          label="Name"
-          placeholder="Doctor Name"
+          label="First Name"
+          placeholder="Doctor First Name"
           required
-          value={doctorData.name}
+          value={doctorData.firstName}
           onChange={(e) =>
             setDoctorData((prev) => ({
               ...prev,
-              name: e.target.value,
+              firstName: e.target.value,
+            }))
+          }
+        />
+        <TextInput
+          label="Last Name"
+          placeholder="Doctor Last Name"
+          required
+          value={doctorData.lastName}
+          onChange={(e) =>
+            setDoctorData((prev) => ({
+              ...prev,
+              lastName: e.target.value,
             }))
           }
         />

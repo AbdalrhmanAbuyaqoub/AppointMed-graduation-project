@@ -37,7 +37,8 @@ function ClinicDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [newDoctorData, setNewDoctorData] = useState({
-    name: "",
+    firstName: "",
+    lastName: "",
     email: "",
     address: "",
     phoneNumber: "",
@@ -63,8 +64,12 @@ function ClinicDetails() {
   } = useClinicQueries(Number(id));
 
   const handleAddDoctor = async () => {
-    if (!newDoctorData.name.trim()) {
-      NotificationService.error("Error", "Doctor name is required");
+    if (!newDoctorData.firstName.trim()) {
+      NotificationService.error("Error", "Doctor first name is required");
+      return;
+    }
+    if (!newDoctorData.lastName.trim()) {
+      NotificationService.error("Error", "Doctor last name is required");
       return;
     }
     if (!newDoctorData.email.trim()) {
@@ -78,7 +83,8 @@ function ClinicDetails() {
 
     const doctorData = {
       clinicId: Number(id),
-      name: newDoctorData.name.trim(),
+      firstName: newDoctorData.firstName.trim(),
+      lastName: newDoctorData.lastName.trim(),
       email: newDoctorData.email.trim(),
       address: newDoctorData.address.trim(),
       phoneNumber: newDoctorData.phoneNumber.trim(),
@@ -86,7 +92,8 @@ function ClinicDetails() {
 
     await addDoctor(doctorData);
     setNewDoctorData({
-      name: "",
+      firstName: "",
+      lastName: "",
       email: "",
       address: "",
       phoneNumber: "",

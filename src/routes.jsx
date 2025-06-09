@@ -6,6 +6,7 @@ import { ROUTES, LazyComponents } from "./routes/index.jsx";
 import PageNotFound from "./pages/PageNotFound";
 import Clinics from "./pages/Clinics";
 import ClinicDetails from "./pages/ClinicDetails";
+import AppointmentDetails from "./pages/AppointmentDetails";
 
 // Loading fallback component
 const LoadingFallback = () => (
@@ -76,6 +77,7 @@ export const AppRoutes = () => {
             path={ROUTES.DOCTOR_DETAILS}
             element={<LazyComponents.DoctorDetails />}
           />
+          <Route path="/appointments/:id" element={<AppointmentDetails />} />
         </Route>
 
         {/* Default route */}

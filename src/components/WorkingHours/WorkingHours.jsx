@@ -7,41 +7,76 @@ import {
   ActionIcon,
   Group,
   Stack,
+  Button,
   useMantineTheme,
 } from "@mantine/core";
-import { IconPlus, IconX } from "@tabler/icons-react";
+import { IconPlus, IconX, IconDeviceFloppy } from "@tabler/icons-react";
 import { notifications } from "@mantine/notifications";
 import TimezoneSelect from "react-timezone-select";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+import { useWorkingHoursQueries } from "../../hooks/useWorkingHoursQueries";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 const DAYS_CONFIG = [
-  { day: "Sunday", letter: "S" },
-  { day: "Monday", letter: "M" },
-  { day: "Tuesday", letter: "T" },
-  { day: "Wednesday", letter: "W" },
-  { day: "Thursday", letter: "T" },
-  { day: "Friday", letter: "F" },
-  { day: "Saturday", letter: "S" },
+  { day: "Sunday", letter: "S", value: 0 },
+  { day: "Monday", letter: "M", value: 1 },
+  { day: "Tuesday", letter: "T", value: 2 },
+  { day: "Wednesday", letter: "W", value: 3 },
+  { day: "Thursday", letter: "T", value: 4 },
+  { day: "Friday", letter: "F", value: 5 },
+  { day: "Saturday", letter: "S", value: 6 },
 ];
 
-const DEFAULT_WORKING_HOURS = {
-  Sunday: { isAvailable: true, from: "09:00", to: "17:00" },
-  Monday: { isAvailable: true, from: "09:00", to: "17:00" },
-  Tuesday: { isAvailable: true, from: "09:00", to: "17:00" },
-  Wednesday: { isAvailable: true, from: "09:00", to: "17:00" },
-  Thursday: { isAvailable: true, from: "09:00", to: "17:00" },
-  Friday: { isAvailable: false, from: "09:00", to: "17:00" },
-  Saturday: { isAvailable: true, from: "09:00", to: "17:00" },
+// No default working hours - show exactly what API returns
+
+const convertTimeToTimeSpan = (timeString) => {
+  if (!timeString) return "00:00:00";
+  // Convert HH:mm to HH:mm:00 format
+  return `${timeString}:00`;
+};
+
+// Convert local time to UTC considering the selected timezone
+const convertTimeToUTC = (timeString, selectedTimezone) => {
+  if (!timeString) return "00:00:00";
+
+  // Get the timezone value
+  const timeZone = selectedTimezone?.value || dayjs.tz.guess();
+
+  // Create a date for today with the time in the selected timezone
+  const today = dayjs().format("YYYY-MM-DD");
+  const dateTimeString = `${today} ${timeString}`;
+
+  // Parse the time in the selected timezone and convert to UTC
+  const utcTime = dayjs.tz(dateTimeString, timeZone).utc();
+
+  // Format as HH:mm:ss
+  return utcTime.format("HH:mm:ss");
 };
 
 const WorkingHours = ({ doctorId }) => {
+  console.log("WorkingHours component rendered with doctorId:", doctorId);
   const theme = useMantineTheme();
-  const [availableDays, setAvailableDays] = useState(DEFAULT_WORKING_HOURS);
+  const [availableDays, setAvailableDays] = useState(null);
   const [initialWorkingHours, setInitialWorkingHours] = useState(null);
-  const [isLoadingHours, setIsLoadingHours] = useState(true);
   const [selectedTimezone, setSelectedTimezone] = useState({
     value: Intl.DateTimeFormat().resolvedOptions().timeZone,
     label: Intl.DateTimeFormat().resolvedOptions().timeZone,
   });
+  const [isInitialState, setIsInitialState] = useState(false);
+
+  const {
+    workingHours,
+    isLoading: isLoadingHours,
+    error: workingHoursError,
+    updateWorkingHours,
+    createWorkingHours,
+    isUpdating,
+    isCreating,
+  } = useWorkingHoursQueries(doctorId);
 
   // Debounce implementation
   const useDebounce = (callback, delay) => {
@@ -66,109 +101,107 @@ const WorkingHours = ({ doctorId }) => {
 
   // Load doctor's working hours
   useEffect(() => {
-    const loadWorkingHours = async () => {
-      try {
-        const savedHours = localStorage.getItem(`doctor_${doctorId}_hours`);
-        const doctorHours = savedHours
-          ? JSON.parse(savedHours)
-          : DEFAULT_WORKING_HOURS;
+    if (workingHours) {
+      setAvailableDays(workingHours);
+      setInitialWorkingHours(workingHours);
 
-        setAvailableDays(doctorHours);
-        setInitialWorkingHours(doctorHours);
-        setIsLoadingHours(false);
-      } catch (error) {
-        console.error("Error loading working hours:", error);
-        notifications.show({
-          title: "Error",
-          message: "Failed to load working hours",
-          color: "red",
-        });
-        setIsLoadingHours(false);
-      }
-    };
-
-    if (doctorId) {
-      loadWorkingHours();
+      // Check if this is an initial state (no working hours assigned)
+      const hasAnyAvailableDay = Object.values(workingHours).some(
+        (day) => day.isAvailable
+      );
+      setIsInitialState(!hasAnyAvailableDay);
     }
-  }, [doctorId]);
+  }, [workingHours]);
+
+  // Show error notification if working hours failed to load
+  useEffect(() => {
+    if (workingHoursError) {
+      notifications.show({
+        title: "Error",
+        message: "Failed to load working hours",
+        color: "red",
+      });
+    }
+  }, [workingHoursError]);
 
   const saveWorkingHours = async (currentHours) => {
     if (!hasWorkingHoursChanged(currentHours)) {
-      console.log("No changes detected in working hours");
       return;
     }
 
     try {
-      const workingHours = Object.entries(currentHours).map(
-        ([day, schedule]) => ({
-          day,
-          isAvailable: schedule.isAvailable,
-          from: schedule.isAvailable ? schedule.from : null,
-          to: schedule.isAvailable ? schedule.to : null,
-        })
-      );
-
-      console.log("Saving working hours changes:", workingHours);
-      localStorage.setItem(
-        `doctor_${doctorId}_hours`,
-        JSON.stringify(currentHours)
-      );
-      setInitialWorkingHours(currentHours);
-
-      notifications.show({
-        title: "Success",
-        message: "Working hours updated",
-        color: "green",
+      const workingHoursData = DAYS_CONFIG.map((dayConfig) => {
+        const dayData = currentHours[dayConfig.day];
+        return {
+          doctorId: Number(doctorId),
+          dayOfWeek: dayConfig.value,
+          startTime: dayData.isAvailable
+            ? convertTimeToUTC(dayData.from, selectedTimezone)
+            : "00:00:00",
+          endTime: dayData.isAvailable
+            ? convertTimeToUTC(dayData.to, selectedTimezone)
+            : "00:00:00",
+        };
       });
+
+      // Check if we need to create or update
+      const hasExistingHours =
+        initialWorkingHours &&
+        Object.values(initialWorkingHours).some((day) => day.isAvailable);
+
+      if (hasExistingHours) {
+        await updateWorkingHours(workingHoursData);
+      } else {
+        await createWorkingHours(workingHoursData);
+      }
+
+      setInitialWorkingHours(currentHours);
     } catch (error) {
       console.error("Error saving working hours:", error);
       notifications.show({
         title: "Error",
-        message: error.message || "Failed to update working hours",
+        message: error.message || "Failed to save working hours",
         color: "red",
       });
     }
   };
 
-  // Create a debounced version of saveWorkingHours
-  const debouncedSave = useDebounce(saveWorkingHours, 1000);
+  // Create debounced save function
+  const debouncedSave = useDebounce((currentHours) => {
+    saveWorkingHours(currentHours);
+  }, 1000); // Save after 2 seconds of no changes
 
-  // Auto-save effect
+  // Auto-save when availableDays changes
   useEffect(() => {
-    if (Object.keys(availableDays).length > 0) {
+    if (
+      availableDays &&
+      initialWorkingHours &&
+      hasWorkingHoursChanged(availableDays)
+    ) {
       debouncedSave(availableDays);
     }
-  }, [availableDays]);
+  }, [availableDays, initialWorkingHours, debouncedSave]);
 
   const handleToggleDay = (day) => {
-    setAvailableDays((prev) => {
-      const newState = {
-        ...prev,
-        [day]: {
-          ...prev[day],
-          isAvailable: !prev[day].isAvailable,
-        },
-      };
-      console.log(`Day ${day} availability changed:`, newState[day]);
-      return newState;
-    });
+    setAvailableDays((prev) => ({
+      ...prev,
+      [day]: {
+        ...prev[day],
+        isAvailable: !prev[day].isAvailable,
+        from: !prev[day].isAvailable ? "09:00" : "",
+        to: !prev[day].isAvailable ? "17:00" : "",
+      },
+    }));
   };
 
   const validateTimeFormat = (time) => {
-    // Allow empty input for clearing
     if (!time) return true;
-
-    // Allow partial input while typing
-    if (time.length < 5) return true;
-
-    // Only validate complete time entries (HH:mm)
     const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
     return timeRegex.test(time);
   };
 
   const handleTimeChange = (day, field, value) => {
-    // Only show error for complete invalid times
-    if (value.length === 5 && !validateTimeFormat(value)) {
+    if (!validateTimeFormat(value)) {
       notifications.show({
         title: "Invalid Time Format",
         message: "Please use HH:mm format (e.g., 09:00)",
@@ -177,30 +210,27 @@ const WorkingHours = ({ doctorId }) => {
       return;
     }
 
-    // Auto-add colon after hours
-    if (value.length === 2 && !value.includes(":")) {
-      value = value + ":";
-    }
-
-    setAvailableDays((prev) => {
-      const newState = {
-        ...prev,
-        [day]: {
-          ...prev[day],
-          [field]: value,
-        },
-      };
-      console.log(`Time updated for ${day}:`, {
-        field,
-        value,
-        daySchedule: newState[day],
-      });
-      return newState;
-    });
+    setAvailableDays((prev) => ({
+      ...prev,
+      [day]: {
+        ...prev[day],
+        [field]: value,
+      },
+    }));
   };
 
   if (isLoadingHours) {
     return <Text>Loading working hours...</Text>;
+  }
+
+  if (!availableDays) {
+    return (
+      <Stack gap={"lg"}>
+        <Text c="dimmed" ta="center">
+          No working hours data available for this doctor.
+        </Text>
+      </Stack>
+    );
   }
 
   return (
@@ -218,7 +248,7 @@ const WorkingHours = ({ doctorId }) => {
                 onChange={(e) =>
                   handleTimeChange(item.day, "from", e.target.value)
                 }
-                placeholder="09:00"
+                placeholder="HH:mm"
                 maxLength={5}
               />
               <Text> - </Text>
@@ -228,7 +258,7 @@ const WorkingHours = ({ doctorId }) => {
                 onChange={(e) =>
                   handleTimeChange(item.day, "to", e.target.value)
                 }
-                placeholder="17:00"
+                placeholder="HH:mm"
                 maxLength={5}
               />
               <ActionIcon
@@ -242,12 +272,20 @@ const WorkingHours = ({ doctorId }) => {
             </Group>
           ) : (
             <Group>
-              <Text c="dimmed">Unavailable</Text>
+              <Text c="dimmed">
+                {isInitialState ? "Not Assigned" : "Unavailable"}
+              </Text>
               <ActionIcon
                 color="black"
                 variant="subtle"
                 radius={"sm"}
-                onClick={() => handleToggleDay(item.day)}
+                onClick={() => {
+                  handleToggleDay(item.day);
+                  // Once user starts setting working hours, it's no longer initial state
+                  if (isInitialState) {
+                    setIsInitialState(false);
+                  }
+                }}
               >
                 <IconPlus size={20} stroke={1.5} />
               </ActionIcon>

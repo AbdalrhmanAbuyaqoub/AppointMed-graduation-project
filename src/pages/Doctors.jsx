@@ -27,7 +27,8 @@ export default function Doctors() {
   const [noClinicModalOpened, setNoClinicModalOpened] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [doctorData, setDoctorData] = useState({
-    name: "",
+    firstName: "",
+    lastName: "",
     email: "",
     address: "",
     phoneNumber: "",
@@ -45,7 +46,10 @@ export default function Doctors() {
   };
 
   const handleSubmit = async () => {
-    if (!doctorData.name.trim()) {
+    if (!doctorData.firstName.trim()) {
+      return;
+    }
+    if (!doctorData.lastName.trim()) {
       return;
     }
     if (!doctorData.email.trim()) {
@@ -58,14 +62,16 @@ export default function Doctors() {
     try {
       await addDoctor({
         clinicId: parseInt(doctorData.selectedClinic),
-        name: doctorData.name.trim(),
+        firstName: doctorData.firstName.trim(),
+        lastName: doctorData.lastName.trim(),
         email: doctorData.email.trim(),
         address: doctorData.address.trim(),
         phoneNumber: doctorData.phoneNumber.trim(),
       });
 
       setDoctorData({
-        name: "",
+        firstName: "",
+        lastName: "",
         email: "",
         address: "",
         phoneNumber: "",
@@ -114,32 +120,31 @@ export default function Doctors() {
       </Modal>
 
       <Stack>
-        <Stack gap={40} mb={50}>
-          <Title order={2}>Doctors</Title>
-          <Group justify="space-between">
-            <TextInput
-              placeholder="Search doctors..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              leftSection={<IconSearch size={16} />}
-              style={{ flex: 1, maxWidth: 300 }}
-              size="md"
-              radius="md"
-            />
-            <Button
-              size="md"
-              leftSection={<IconPlus size={20} />}
-              onClick={handleAddDoctorClick}
-              radius="md"
-            >
-              Add New Doctor
-            </Button>
-          </Group>
-        </Stack>
+        <Title order={2}>Doctors</Title>
+        <Group mt={60} justify="space-between">
+          <TextInput
+            size="lg"
+            placeholder="Search doctors..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            leftSection={<IconSearch size={16} />}
+            style={{ flex: 1, maxWidth: 300 }}
+            radius="md"
+          />
+          <Button
+            size="lg"
+            variant="outline"
+            leftSection={<IconPlus size={20} />}
+            onClick={handleAddDoctorClick}
+            radius="xl"
+          >
+            Add New Doctor
+          </Button>
+        </Group>
 
         <Divider mb={20} />
 
-        <Paper radius={"sm"} withBorder shadow="sm">
+        <Paper radius={"md"} withBorder shadow="sm">
           <DoctorsTable searchQuery={searchQuery} />
         </Paper>
 

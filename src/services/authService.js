@@ -104,7 +104,7 @@ export const authService = {
       const response = await authApi.post(ENDPOINTS.LOGIN, loginData);
       console.log("Login response:", response.data);
 
-      const { token, user, role } = response.data;
+      const { token, user } = response.data;
 
       if (!token || !user) {
         console.error("Invalid response format:", response.data);
@@ -114,11 +114,17 @@ export const authService = {
       // Store token
       setToken(token);
 
-      // Create normalized user object
+      // User object now contains all necessary fields including role
       const normalizedUser = {
         ...user,
-        role: role,
+        // Ensure lastname is normalized to lastName for consistency
+        lastName: user.lastname || user.lastName,
       };
+
+      // Remove the old lastname field if it exists
+      if (normalizedUser.lastname) {
+        delete normalizedUser.lastname;
+      }
 
       // Store user data for later use
       currentUserData = normalizedUser;
@@ -154,15 +160,16 @@ export const authService = {
         fname: userData.firstName,
         lname: userData.lastName,
         password: userData.password,
-        conffirmPassword: userData.confirmPassword,
+        conffirmPassword: userData.confirmPassword, // Note: API expects this typo
         address: userData.address,
-        role: "patient",
+        phoneNumber: userData.phoneNumber || "", // Default to empty string if not provided
+        role: "patient", // Default role for registration
       };
 
       const response = await authApi.post(ENDPOINTS.REGISTER, registerData);
       console.log("Register response:", response.data);
 
-      const { isSuccess, messages, result } = response.data;
+      const { statusCode, isSuccess, messages, result } = response.data;
 
       if (!isSuccess || !result) {
         console.error("Registration failed:", messages);
@@ -170,6 +177,18 @@ export const authService = {
           success: false,
           error: messages || ERROR_MESSAGES.REGISTRATION_FAILED,
         };
+      }
+
+      // Normalize the user data from registration response
+      const normalizedUser = {
+        ...result,
+        // Ensure lastname is normalized to lastName for consistency
+        lastName: result.lastname || result.lastName,
+      };
+
+      // Remove the old lastname field if it exists
+      if (normalizedUser.lastname) {
+        delete normalizedUser.lastname;
       }
 
       // After successful registration, automatically login
@@ -185,7 +204,7 @@ export const authService = {
         );
         return {
           success: true,
-          user: result,
+          user: normalizedUser,
           message:
             "Registration successful but auto-login failed. Please login manually.",
         };
@@ -201,6 +220,7 @@ export const authService = {
 
       const errorMessage =
         error.response?.data?.messages ||
+        error.response?.data?.message ||
         error.message ||
         ERROR_MESSAGES.REGISTRATION_FAILED;
       return { success: false, error: errorMessage };

@@ -34,6 +34,7 @@ export function AuthenticationImage() {
       lastName: "",
       confirmPassword: "",
       address: "",
+      phoneNumber: "",
     },
 
     validate: {
@@ -67,6 +68,8 @@ export function AuthenticationImage() {
         type === "register" && !val ? "Last Name is required" : null,
       address: (val) =>
         type === "register" && !val ? "Address is required" : null,
+      phoneNumber: (val) =>
+        type === "register" && !val ? "Phone Number is required" : null,
     },
   });
 
@@ -90,6 +93,7 @@ export function AuthenticationImage() {
           lastName: values.lastName,
           confirmPassword: values.confirmPassword,
           address: values.address,
+          phoneNumber: values.phoneNumber,
         });
 
         if (!result?.success) {
@@ -184,6 +188,21 @@ export function AuthenticationImage() {
                       form.setFieldValue("address", event.currentTarget.value)
                     }
                     error={form.errors.address}
+                    radius="md"
+                    disabled={isLoading}
+                  />
+                  <TextInput
+                    required
+                    label="Phone Number"
+                    placeholder="Enter your phone number"
+                    value={form.values.phoneNumber}
+                    onChange={(event) =>
+                      form.setFieldValue(
+                        "phoneNumber",
+                        event.currentTarget.value
+                      )
+                    }
+                    error={form.errors.phoneNumber}
                     radius="md"
                     disabled={isLoading}
                   />

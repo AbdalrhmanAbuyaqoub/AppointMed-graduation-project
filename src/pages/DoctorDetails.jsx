@@ -46,8 +46,14 @@ export default function DoctorDetails() {
   const doctor = doctors.find((d) => d.id === Number(id));
 
   const handleStartEditing = () => {
+    // Split the name into firstName and lastName
+    const nameParts = doctor.name.split(" ");
+    const firstName = nameParts[0] || "";
+    const lastName = nameParts.slice(1).join(" ") || "";
+
     setEditedDoctor({
-      name: doctor.name,
+      firstName,
+      lastName,
       email: doctor.email,
       phoneNumber: doctor.phoneNumber,
       address: doctor.address,
@@ -82,7 +88,8 @@ export default function DoctorDetails() {
     try {
       await updateDoctor({
         id: Number(id),
-        name: editedDoctor.name,
+        firstName: editedDoctor.firstName,
+        lastName: editedDoctor.lastName,
         email: editedDoctor.email,
         phoneNumber: editedDoctor.phoneNumber,
         address: editedDoctor.address,
@@ -124,7 +131,7 @@ export default function DoctorDetails() {
         </ActionIcon>
         <Title order={2}>Doctor Details</Title>
       </Group>
-      <Paper radius={"lg"} p={"xl"} withBorder maw={800}>
+      <Paper radius={"md"} p={"xl"} withBorder maw={800}>
         <Group gap={"xl"}>
           <Stack gap="lg">
             <Avatar size={80} radius={80} variant="filled">
@@ -145,12 +152,23 @@ export default function DoctorDetails() {
                 >
                   <Stack gap="md">
                     <TextInput
-                      label="Name"
-                      value={editedDoctor.name}
+                      label="First Name"
+                      value={editedDoctor.firstName}
                       onChange={(e) =>
                         setEditedDoctor({
                           ...editedDoctor,
-                          name: e.target.value,
+                          firstName: e.target.value,
+                        })
+                      }
+                      required
+                    />
+                    <TextInput
+                      label="Last Name"
+                      value={editedDoctor.lastName}
+                      onChange={(e) =>
+                        setEditedDoctor({
+                          ...editedDoctor,
+                          lastName: e.target.value,
                         })
                       }
                       required
