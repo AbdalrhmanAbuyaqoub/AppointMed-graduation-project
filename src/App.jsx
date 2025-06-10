@@ -18,7 +18,7 @@ export default function App() {
       <MantineProvider theme={theme}>
         <Notifications position="bottom-right" />
         <ErrorBoundary>
-          <BrowserRouter>
+          <BrowserRouter basename="/graduation-front">
             <div style={{ position: "relative", minHeight: "100vh" }}>
               <LoadingOverlay visible={isLoading} />
               <AppRoutes />
