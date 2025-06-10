@@ -15,14 +15,26 @@ import { useAppointmentQueries } from "../hooks/useAppointmentQueries";
 import AppointmentForm from "./AppointmentForm";
 
 function CreateAppointmentDrawer({ opened, onClose }) {
-  const { createAppointmentWithPatient } = useAppointmentQueries();
+  const { createAppointmentWithPatient, createAppointment } =
+    useAppointmentQueries();
 
   const handleCreateAppointment = async (values) => {
     try {
-      const response = await createAppointmentWithPatient.mutateAsync(values);
+      let response;
+      const isNewPatient = values.patientType === "new";
+
+      if (isNewPatient) {
+        // Remove patientType from values for API call
+        const { patientType, ...apiValues } = values;
+        response = await createAppointmentWithPatient.mutateAsync(apiValues);
+      } else {
+        // For existing patient, remove patientType and use createAppointment
+        const { patientType, ...apiValues } = values;
+        response = await createAppointment.mutateAsync(apiValues);
+      }
 
       // Handle success with different messages based on whether a new user was created
-      if (response.userCreated && response.temporaryPassword) {
+      if (isNewPatient && response.userCreated && response.temporaryPassword) {
         // Create a custom notification with copy functionality
         const notificationContent = (
           <Stack gap="xs">
@@ -126,17 +138,20 @@ function CreateAppointmentDrawer({ opened, onClose }) {
     }
   };
 
+  const isLoading =
+    createAppointmentWithPatient.isPending || createAppointment.isPending;
+
   return (
     <Drawer
       opened={opened}
       onClose={onClose}
       title="Create New Appointment"
       position="right"
-      size="lg"
+      size="md"
     >
       <AppointmentForm
         onSubmit={handleCreateAppointment}
-        isLoading={createAppointmentWithPatient.isPending}
+        isLoading={isLoading}
       />
     </Drawer>
   );
