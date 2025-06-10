@@ -330,7 +330,7 @@ function Appointments() {
           onClose={closeDrawer}
           title="Create New Appointment"
           position="right"
-          size="md"
+          size="lg"
         >
           <AppointmentForm
             onSubmit={handleCreateAppointment}

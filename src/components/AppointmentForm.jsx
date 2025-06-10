@@ -12,6 +12,7 @@ import {
 } from "@mantine/core";
 import { DateTimePicker } from "@mantine/dates";
 import { useClinicQueries } from "../hooks/useClinicQueries";
+import { useEffect } from "react";
 
 function AppointmentForm({ onSubmit, isLoading, initialValues = null }) {
   const { doctors } = useClinicQueries();
@@ -46,6 +47,14 @@ function AppointmentForm({ onSubmit, isLoading, initialValues = null }) {
         !value ? "Please select appointment end time" : null,
     },
   });
+
+  useEffect(() => {
+    if (form.values.startTime) {
+      const endTime = new Date(form.values.startTime);
+      endTime.setMinutes(endTime.getMinutes() + 30);
+      form.setFieldValue("endTime", endTime);
+    }
+  }, [form.values.startTime]);
 
   const convertToUTC = (date) => {
     if (!date) return null;
