@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import {
-  IconBrandMantine,
   IconChevronsRight,
   IconCalendarEvent,
   IconLayoutGrid,
@@ -8,6 +7,7 @@ import {
   IconStethoscope,
 } from "@tabler/icons-react";
 import {
+  Title,
   Center,
   Stack,
   Tooltip,
@@ -108,11 +108,78 @@ export function NavbarMinimal({
     </Stack>
   );
 
+  const LogoComponent = () => (
+    <svg
+      width="40"
+      height="40"
+      viewBox="0 0 68 68"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      style={{ transition: "all 0.3s ease" }}
+    >
+      <defs>
+        <linearGradient
+          id="logo-gradient"
+          x1="68"
+          y1="0"
+          x2="0"
+          y2="68"
+          gradientUnits="userSpaceOnUse"
+        >
+          <stop stopColor="#A78BFA" />
+          <stop offset="1" stopColor="#7C3AED" />
+        </linearGradient>
+      </defs>
+      <path
+        d="M54 4H14C8.47715 4 4 8.47715 4 14V54C4 59.5228 8.47715 64 14 64H54C59.5228 64 64 59.5228 64 54V14C64 8.47715 59.5228 4 54 4Z"
+        fill="url(#logo-gradient)"
+      />
+      <path
+        d="M48 34H38V24"
+        stroke="white"
+        strokeOpacity="0.8"
+        strokeWidth="4.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M20 34H30V44"
+        stroke="white"
+        strokeOpacity="0.8"
+        strokeWidth="4.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M34 20V30H24"
+        stroke="white"
+        strokeOpacity="0.8"
+        strokeWidth="4.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M34 48V38H44"
+        stroke="white"
+        strokeOpacity="0.8"
+        strokeWidth="4.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+
   const navContent = (
     <Stack>
-      <Center>
-        <IconBrandMantine size={35} color={theme.primaryColor} />
-      </Center>
+      <Group ml={5} gap={4}>
+        <LogoComponent />
+        {isExpanded && (
+          <Title order={1} fz="24" fw={800} ff="Plus Jakarta Sans">
+            <span style={{ color: "#4C1D95" }}>Appoint</span>
+            <span style={{ color: "#8B5CF6" }}>Med</span>
+          </Title>
+        )}
+      </Group>
       <Space h={30} />
       {navigationContent}
     </Stack>
