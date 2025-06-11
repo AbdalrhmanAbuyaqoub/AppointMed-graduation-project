@@ -1,1 +1,0 @@
-import{j as r,C as a,S as s,a as e,P as t}from"./index-BdO48VEK.js";function i(){return r.jsx(a,{fluid:!0,maw:1232,children:r.jsxs(s,{gap:100,children:[r.jsx(e,{order:2,children:"Dashboard"}),r.jsx(t,{withBorder:!0,radius:"md",h:500,shadow:"sm"})]})})}export{i as default};
