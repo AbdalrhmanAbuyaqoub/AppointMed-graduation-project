@@ -143,6 +143,9 @@ function CreateAppointmentDrawer({ opened, onClose }) {
 
   return (
     <Drawer
+      overlayProps={{
+        opacity: 0.4,
+      }}
       opened={opened}
       onClose={onClose}
       title="Create New Appointment"

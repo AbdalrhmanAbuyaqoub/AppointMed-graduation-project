@@ -174,7 +174,7 @@ export function NavbarMinimal({
       <Group ml={5} gap={4}>
         <LogoComponent />
         {isExpanded && (
-          <Title order={1} fz="24" fw={800} ff="Plus Jakarta Sans">
+          <Title order={1} fz="24" fw={700} ff="Plus Jakarta Sans">
             <span style={{ color: "#4C1D95" }}>Appoint</span>
             <span style={{ color: "#8B5CF6" }}>Med</span>
           </Title>

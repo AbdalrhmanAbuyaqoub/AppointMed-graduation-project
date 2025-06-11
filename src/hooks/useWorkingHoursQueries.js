@@ -9,7 +9,8 @@ import timezone from "dayjs/plugin/timezone";
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-const DAYS_CONFIG = [
+// Constants
+export const DAYS_CONFIG = [
   { day: "Sunday", letter: "S", value: 0 },
   { day: "Monday", letter: "M", value: 1 },
   { day: "Tuesday", letter: "T", value: 2 },
@@ -19,7 +20,7 @@ const DAYS_CONFIG = [
   { day: "Saturday", letter: "S", value: 6 },
 ];
 
-// Convert UTC time to local time
+// Utility functions
 const convertUTCToLocal = (utcTimeString) => {
   if (!utcTimeString || utcTimeString === "00:00:00") return "";
 
@@ -34,7 +35,23 @@ const convertUTCToLocal = (utcTimeString) => {
   }
 };
 
-// Convert API working hours data to component format
+const isWorkingDay = (dayData) => {
+  return dayData?.startTime !== "00:00:00" && dayData?.endTime !== "00:00:00";
+};
+
+const createEmptySchedule = () => {
+  const schedule = {};
+  DAYS_CONFIG.forEach((dayConfig) => {
+    schedule[dayConfig.day] = {
+      isAvailable: false,
+      from: "",
+      to: "",
+    };
+  });
+  return schedule;
+};
+
+// Data transformation functions
 const convertApiDataToComponentFormat = (apiData, targetDoctorId) => {
   const doctorObject = apiData.find(
     (doctor) => doctor.doctorId === Number(targetDoctorId)
@@ -52,15 +69,7 @@ const convertApiDataToComponentFormat = (apiData, targetDoctorId) => {
     if (doctorObject.message) {
       console.log(`API Message: ${doctorObject.message}`);
     }
-    const emptySchedule = {};
-    DAYS_CONFIG.forEach((dayConfig) => {
-      emptySchedule[dayConfig.day] = {
-        isAvailable: false,
-        from: "",
-        to: "",
-      };
-    });
-    return emptySchedule;
+    return createEmptySchedule();
   }
 
   const componentFormat = {};
@@ -70,22 +79,11 @@ const convertApiDataToComponentFormat = (apiData, targetDoctorId) => {
       (item) => item.dayOfWeek === dayConfig.value
     );
 
-    if (dayData) {
-      const startTime =
-        dayData.startTime && dayData.startTime !== "00:00:00"
-          ? convertUTCToLocal(dayData.startTime)
-          : "";
-      const endTime =
-        dayData.endTime && dayData.endTime !== "00:00:00"
-          ? convertUTCToLocal(dayData.endTime)
-          : "";
-      const isAvailable =
-        dayData.startTime !== "00:00:00" && dayData.endTime !== "00:00:00";
-
+    if (dayData && isWorkingDay(dayData)) {
       componentFormat[dayConfig.day] = {
-        isAvailable,
-        from: startTime,
-        to: endTime,
+        isAvailable: true,
+        from: convertUTCToLocal(dayData.startTime),
+        to: convertUTCToLocal(dayData.endTime),
       };
     } else {
       componentFormat[dayConfig.day] = {
@@ -99,15 +97,40 @@ const convertApiDataToComponentFormat = (apiData, targetDoctorId) => {
   return componentFormat;
 };
 
+const convertToTableFormat = (apiData) => {
+  const doctorsWorkingDays = {};
+
+  apiData.forEach((doctorObject) => {
+    const doctorId = doctorObject.doctorId;
+    const workingDays = [];
+
+    if (doctorObject.workingHours?.length > 0) {
+      doctorObject.workingHours.forEach((dayData) => {
+        if (isWorkingDay(dayData)) {
+          workingDays.push(dayData.dayOfWeek);
+        }
+      });
+    }
+
+    doctorsWorkingDays[doctorId] = workingDays;
+  });
+
+  return doctorsWorkingDays;
+};
+
+// Shared query function
+const fetchAllDoctorsWorkingHours = () => {
+  return appointmentService.getAllDoctorsWorkingHours();
+};
+
+// Main hooks
 export function useWorkingHoursQueries(doctorId) {
   const queryClient = useQueryClient();
 
-  // Query for fetching working hours
   const workingHoursQuery = useQuery({
     queryKey: ["working-hours", doctorId],
     queryFn: async () => {
-      const allDoctorsWorkingHours =
-        await appointmentService.getAllDoctorsWorkingHours();
+      const allDoctorsWorkingHours = await fetchAllDoctorsWorkingHours();
       return convertApiDataToComponentFormat(allDoctorsWorkingHours, doctorId);
     },
     enabled: !!doctorId,
@@ -120,11 +143,13 @@ export function useWorkingHoursQueries(doctorId) {
     },
   });
 
-  // Mutation for updating working hours
   const updateWorkingHours = useMutation({
     mutationFn: clinicsService.updateDoctorWorkingHours,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["working-hours", doctorId] });
+      queryClient.invalidateQueries({
+        queryKey: ["all-doctors-working-hours"],
+      });
       notifications.show({
         title: "Success",
         message: "Working hours updated successfully",
@@ -140,11 +165,13 @@ export function useWorkingHoursQueries(doctorId) {
     },
   });
 
-  // Mutation for creating working hours
   const createWorkingHours = useMutation({
     mutationFn: clinicsService.createDoctorWorkingHours,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["working-hours", doctorId] });
+      queryClient.invalidateQueries({
+        queryKey: ["all-doctors-working-hours"],
+      });
       notifications.show({
         title: "Success",
         message: "Working hours created successfully",
@@ -168,5 +195,25 @@ export function useWorkingHoursQueries(doctorId) {
     createWorkingHours: createWorkingHours.mutate,
     isUpdating: updateWorkingHours.isPending,
     isCreating: createWorkingHours.isPending,
+  };
+}
+
+export function useAllDoctorsWorkingHours() {
+  const workingHoursQuery = useQuery({
+    queryKey: ["all-doctors-working-hours"],
+    queryFn: async () => {
+      const allDoctorsWorkingHours = await fetchAllDoctorsWorkingHours();
+      return convertToTableFormat(allDoctorsWorkingHours);
+    },
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    onError: (error) => {
+      console.error("Error fetching all doctors working hours:", error);
+    },
+  });
+
+  return {
+    doctorsWorkingDays: workingHoursQuery.data || {},
+    isLoading: workingHoursQuery.isLoading,
+    error: workingHoursQuery.error,
   };
 }

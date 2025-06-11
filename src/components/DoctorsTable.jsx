@@ -10,14 +10,53 @@ import {
   Center,
   rem,
   Title,
+  Box,
 } from "@mantine/core";
 import { useDoctorQueries } from "../hooks/useDoctorQueries";
+import {
+  useAllDoctorsWorkingHours,
+  DAYS_CONFIG,
+} from "../hooks/useWorkingHoursQueries";
 import { IconUserOff } from "@tabler/icons-react";
 import { useNavigate } from "react-router-dom";
 import { theme } from "../theme";
 
+// Working Days Component
+function WorkingDaysDisplay({ doctorId, workingDays }) {
+  return (
+    <Group gap="8">
+      {DAYS_CONFIG.map((dayConfig) => {
+        const isAvailable = workingDays.includes(dayConfig.value);
+        return (
+          <Box
+            bg={isAvailable ? "violet" : "gray.4"}
+            fw={500}
+            p={4}
+            h={24}
+            w={24}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              borderRadius: "50%",
+            }}
+            key={dayConfig.value}
+            title={dayConfig.day}
+          >
+            <Text size="xs" fw={500} c="white">
+              {dayConfig.letter}
+            </Text>
+          </Box>
+        );
+      })}
+    </Group>
+  );
+}
+
 export function DoctorsTable({ searchQuery = "" }) {
   const { doctors, isLoading } = useDoctorQueries();
+  const { doctorsWorkingDays, isLoading: isLoadingWorkingHours } =
+    useAllDoctorsWorkingHours();
   const navigate = useNavigate();
 
   const handleDoctorClick = (doctorId) => {
@@ -38,7 +77,7 @@ export function DoctorsTable({ searchQuery = "" }) {
   });
 
   // Loading state with skeleton
-  if (isLoading) {
+  if (isLoading || isLoadingWorkingHours) {
     return (
       <Stack>
         <Skeleton height={40} radius="sm" />
@@ -80,22 +119,23 @@ export function DoctorsTable({ searchQuery = "" }) {
 
   return (
     <Stack gap={0}>
-      <Text fz="lg" fw={600} m={20}>
+      {/* <Text fz="lg" fw={600} m={20}>
         Doctors List
       </Text>
-      <Divider></Divider>
+      <Divider></Divider> */}
 
       <Table highlightOnHover verticalSpacing="sm" horizontalSpacing="lg">
         <Table.Thead>
           <Table.Tr>
             <Table.Th c="dimmed">Name</Table.Th>
+            <Table.Th c="dimmed">Working Days</Table.Th>
             <Table.Th c="dimmed">Clinic</Table.Th>
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
           {filteredDoctors.length === 0 ? (
             <Table.Tr>
-              <Table.Td colSpan={2}>
+              <Table.Td colSpan={3}>
                 <Center py="xl">
                   <Stack align="center" gap="md">
                     <IconUserOff size={30} opacity={0.4} />
@@ -122,11 +162,13 @@ export function DoctorsTable({ searchQuery = "" }) {
                       radius="xl"
                       variant="filled"
                     >
-                      {doctor.name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")
-                        .toUpperCase()}
+                      <Text fz="sm" fw={600} c={"white"}>
+                        {doctor.name
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")
+                          .toUpperCase()}
+                      </Text>
                     </Avatar>
                     <Text
                       size="sm"
@@ -137,6 +179,12 @@ export function DoctorsTable({ searchQuery = "" }) {
                       {doctor.name}
                     </Text>
                   </Group>
+                </Table.Td>
+                <Table.Td>
+                  <WorkingDaysDisplay
+                    doctorId={doctor.id}
+                    workingDays={doctorsWorkingDays[doctor.id] || []}
+                  />
                 </Table.Td>
                 <Table.Td>
                   <Badge

@@ -84,7 +84,7 @@ export default function Doctors() {
   };
 
   return (
-    <Container pt={20} maw={1232} fluid>
+    <Container pt={12} maw={1232} fluid>
       <Modal
         title={
           <Text fz={"lg"} fw={700}>
@@ -120,8 +120,10 @@ export default function Doctors() {
       </Modal>
 
       <Stack>
-        <Title order={2}>Doctors</Title>
-        <Group mt={60} justify="space-between">
+        <Title fz={"24px"} order={2}>
+          Doctors
+        </Title>
+        <Group mt={40} justify="space-between">
           <TextInput
             size="lg"
             placeholder="Search doctors..."
@@ -142,9 +144,7 @@ export default function Doctors() {
           </Button>
         </Group>
 
-        <Divider mb={20} />
-
-        <Paper radius={"md"} withBorder shadow="sm">
+        <Paper radius={"md"} withBorder>
           <DoctorsTable searchQuery={searchQuery} />
         </Paper>
 

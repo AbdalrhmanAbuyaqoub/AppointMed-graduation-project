@@ -32,6 +32,8 @@ api.interceptors.request.use(
  * @property {string} id - The patient's ID
  * @property {string} username - The patient's username
  * @property {string} role - The patient's role (should be "Patient")
+ * @property {string} fullName - The patient's full name
+ * @property {string} email - The patient's email address
  */
 
 export const userService = {
@@ -48,7 +50,15 @@ export const userService = {
       //   "statusCode": 200,
       //   "isSuccess": true,
       //   "messages": "Successfully",
-      //   "result": [...]
+      //   "result": [
+      //     {
+      //       "id": "04d14f5e-b2a5-4e8d-83af-5a701f8814d3",
+      //       "username": "newtest",
+      //       "role": "Patient",
+      //       "fullName": "test test",
+      //       "email": "newtest@example.com"
+      //     }
+      //   ]
       // }
 
       if (response.data.isSuccess && Array.isArray(response.data.result)) {

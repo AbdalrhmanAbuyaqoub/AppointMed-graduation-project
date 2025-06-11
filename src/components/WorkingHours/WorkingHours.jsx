@@ -31,14 +31,6 @@ const DAYS_CONFIG = [
   { day: "Saturday", letter: "S", value: 6 },
 ];
 
-// No default working hours - show exactly what API returns
-
-const convertTimeToTimeSpan = (timeString) => {
-  if (!timeString) return "00:00:00";
-  // Convert HH:mm to HH:mm:00 format
-  return `${timeString}:00`;
-};
-
 // Convert local time to UTC considering the selected timezone
 const convertTimeToUTC = (timeString, selectedTimezone) => {
   if (!timeString) return "00:00:00";
@@ -169,7 +161,7 @@ const WorkingHours = ({ doctorId }) => {
   // Create debounced save function
   const debouncedSave = useDebounce((currentHours) => {
     saveWorkingHours(currentHours);
-  }, 1000); // Save after 2 seconds of no changes
+  }, 2000); // Save after 2 seconds of no changes
 
   // Auto-save when availableDays changes
   useEffect(() => {

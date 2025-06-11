@@ -193,7 +193,7 @@ function AppointmentForm({ onSubmit, isLoading, initialValues = null }) {
             placeholder="Choose an existing patient"
             data={patients.map((patient) => ({
               value: patient.id,
-              label: patient.username || `Patient ${patient.id}`,
+              label: patient.fullName + " - " + patient.email,
             }))}
             searchable
             required

@@ -425,7 +425,7 @@ function AppointmentsTable({
             <Table.Th>Date</Table.Th>
             <Table.Th>Time</Table.Th>
             <Table.Th>Status</Table.Th>
-            <Table.Th>Actions</Table.Th>
+            {/* <Table.Th>Actions</Table.Th> */}
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>

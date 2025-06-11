@@ -70,7 +70,9 @@ function CreateDoctorDrawer({
 
   return (
     <Drawer
-      withOverlay={false}
+      overlayProps={{
+        opacity: 0.4,
+      }}
       opened={opened}
       onClose={onClose}
       title={
