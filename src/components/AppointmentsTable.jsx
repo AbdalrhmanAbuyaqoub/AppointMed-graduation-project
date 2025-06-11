@@ -11,6 +11,7 @@ import {
   ActionIcon,
   SegmentedControl,
   Modal,
+  Pagination,
 } from "@mantine/core";
 import {
   IconEdit,
@@ -107,6 +108,10 @@ function AppointmentsTable({
   const [isDetailsDrawerOpen, setIsDetailsDrawerOpen] = useState(false);
   const [filteredAppointments, setFilteredAppointments] =
     useState(appointments);
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const { updateAppointment, deleteAppointment, updateAppointmentStatus } =
     useAppointmentQueries();
@@ -251,7 +256,18 @@ function AppointmentsTable({
     });
 
     setFilteredAppointments(filtered);
+    // Reset to first page when filters change
+    setCurrentPage(1);
   }, [appointments, statusFilter, searchQuery, dateRange]);
+
+  // Calculate pagination values
+  const totalPages = Math.ceil(filteredAppointments.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedAppointments = filteredAppointments.slice(
+    startIndex,
+    endIndex
+  );
 
   // Handle status update
   const handleStatusUpdate = async (appointmentId, newStatus) => {
@@ -413,7 +429,7 @@ function AppointmentsTable({
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
-          {filteredAppointments.length === 0 ? (
+          {paginatedAppointments.length === 0 ? (
             <EmptyState
               searchQuery={searchQuery}
               hasFilters={
@@ -421,7 +437,7 @@ function AppointmentsTable({
               }
             />
           ) : (
-            filteredAppointments.map((appointment) => {
+            paginatedAppointments.map((appointment) => {
               // Use only numeric status
               const currentStatus = appointment.status;
               const statusText = statusMap[currentStatus] || "Scheduled";
@@ -517,6 +533,31 @@ function AppointmentsTable({
           )}
         </Table.Tbody>
       </Table>
+
+      {/* Pagination */}
+      {/* Display pagination info */}
+      {filteredAppointments.length > 0 && (
+        <Group justify="space-between" mt="md">
+          <Text size="sm" c="dimmed">
+            Showing {startIndex + 1} to{" "}
+            {Math.min(endIndex, filteredAppointments.length)} of{" "}
+            {filteredAppointments.length} appointments
+          </Text>
+          <Pagination
+            value={currentPage}
+            onChange={setCurrentPage}
+            total={totalPages}
+            size="sm"
+            radius="md"
+            withEdges
+          />
+          {totalPages > 1 && (
+            <Text size="sm" c="dimmed">
+              Page {currentPage} of {totalPages}
+            </Text>
+          )}
+        </Group>
+      )}
 
       {/* Edit Modal */}
       <Modal
