@@ -42,8 +42,11 @@ api.interceptors.request.use(
  * @property {string} startDate - The appointment start date and time
  * @property {string} endDate - The appointment end date and time
  * @property {string} notes - Additional notes for the appointment
- * @property {Doctor} doctor - The doctor object
+ * @property {Doctor} doctor - The doctor object with full details
+ * @property {string} clinicName - The name of the clinic
  * @property {string} patientName - The name of the patient
+ * @property {string} patientId - The UUID of the patient
+ * @property {number} status - The appointment status (0: scheduled, 1: cancelled, 2: completed, 3: no show)
  */
 
 export const appointmentService = {
@@ -53,7 +56,9 @@ export const appointmentService = {
    */
   getAllAppointments: async () => {
     try {
-      const response = await api.get("/Appointment/get-all-appointments");
+      const response = await api.get(
+        "/Appointment/get-all-appointments-with-status"
+      );
       return Array.isArray(response.data) ? response.data : [];
     } catch (error) {
       console.error("Error fetching appointments:", error);
@@ -240,6 +245,37 @@ export const appointmentService = {
       return Array.isArray(response.data) ? response.data : [];
     } catch (error) {
       console.error("Error fetching all doctors working hours:", error);
+      throw error;
+    }
+  },
+
+  /**
+   * Update appointment status
+   * @param {number} appointmentId - The appointment ID
+   * @param {number} newStatus - The new status (0: scheduled, 1: cancelled, 2: completed, 3: no show)
+   * @returns {Promise<{message: string, newStatus: number}>}
+   */
+  updateAppointmentStatus: async (appointmentId, newStatus) => {
+    try {
+      const response = await api.put(
+        `/Appointment/update-status/${appointmentId}?newStatus=${newStatus}`
+      );
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  /**
+   * Get appointment status only
+   * @param {number} id - The appointment ID
+   * @returns {Promise<{id: number, status: number}>}
+   */
+  getAppointmentStatus: async (id) => {
+    try {
+      const response = await api.get(`/Appointment/status-only/${id}`);
+      return response.data;
+    } catch (error) {
       throw error;
     }
   },

@@ -6,6 +6,7 @@ import {
   Select,
   Group,
   Button,
+  TextInput,
 } from "@mantine/core";
 import { useClinicQueries } from "../hooks/useClinicQueries";
 import { useAppointmentQueries } from "../hooks/useAppointmentQueries";
@@ -13,7 +14,7 @@ import { useState, useCallback } from "react";
 import { useDisclosure } from "@mantine/hooks";
 import AppointmentsTable from "../components/AppointmentsTable";
 import CreateAppointmentDrawer from "../components/CreateAppointmentDrawer";
-import { IconPlus } from "@tabler/icons-react";
+import { IconPlus, IconSearch } from "@tabler/icons-react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
@@ -23,6 +24,7 @@ dayjs.extend(timezone);
 function Appointments() {
   const [selectedClinicId, setSelectedClinicId] = useState(null);
   const [selectedDoctorId, setSelectedDoctorId] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const [drawerOpened, { open: openDrawer, close: closeDrawer }] =
     useDisclosure(false);
 
@@ -53,6 +55,15 @@ function Appointments() {
     : selectedClinicId
     ? clinicAppointments
     : appointments;
+
+  console.log("Displayed appointments source:", {
+    selectedDoctorId,
+    selectedClinicId,
+    appointmentsCount: appointments?.length,
+    doctorAppointmentsCount: doctorAppointments?.length,
+    clinicAppointmentsCount: clinicAppointments?.length,
+    displayedCount: displayedAppointments?.length,
+  });
 
   const handleSelect = useCallback((value) => {
     if (!value || value === "all") {
@@ -98,6 +109,16 @@ function Appointments() {
   // Transform appointments data to match the table's expected format
   const formattedAppointments = (displayedAppointments || []).map(
     (appointment) => {
+      console.log("Before formatting - appointment:", {
+        id: appointment.id,
+        status: appointment.status,
+        statusType: typeof appointment.status,
+        patientName: appointment.patientName,
+        doctor: appointment.doctor,
+        clinicName: appointment.clinicName,
+        doctorName: appointment.doctorName,
+        rawAppointment: appointment,
+      });
       try {
         const startDate = appointment.startDate
           ? dayjs.utc(appointment.startDate).tz(dayjs.tz.guess())
@@ -110,10 +131,10 @@ function Appointments() {
             id: appointment.id,
             patientName: appointment.patientName,
             doctorName: appointment.doctor?.name || "N/A",
-            clinicName: appointment.doctor?.clinicName || "N/A",
+            clinicName: appointment.clinicName || "N/A",
             date: "Invalid Date",
             time: "Invalid Time",
-            status: appointment.status || "Scheduled",
+            status: appointment.status !== undefined ? appointment.status : 0,
             doctor: appointment.doctor,
           };
         }
@@ -121,22 +142,30 @@ function Appointments() {
         // Format date as YYYY-MM-DD for consistent comparison
         const dateStr = startDate.format("YYYY-MM-DD");
 
-        return {
+        const formattedAppointment = {
           id: appointment.id,
           patientName: appointment.patientName,
           doctorName: appointment.doctor?.name || "N/A",
-          clinicName: appointment.doctor?.clinicName || "N/A",
+          clinicName: appointment.clinicName || "N/A",
           // Store the raw date for filtering
           rawDate: startDate.toDate(),
           // Format date for display
           date: dateStr,
           displayDate: startDate.format("MMM D, YYYY"),
           time: startDate.format("hh:mm A"),
-          status: appointment.status || "Scheduled",
+          status: appointment.status !== undefined ? appointment.status : 0,
           doctor: appointment.doctor,
           patientPhone: appointment.patientPhone,
           notes: appointment.notes,
         };
+        console.log("After formatting - appointment:", {
+          id: formattedAppointment.id,
+          originalStatus: appointment.status,
+          finalStatus: formattedAppointment.status,
+          statusType: typeof formattedAppointment.status,
+          patientName: formattedAppointment.patientName,
+        });
+        return formattedAppointment;
       } catch (error) {
         console.error("Error formatting appointment:", error);
         return {
@@ -144,11 +173,11 @@ function Appointments() {
           id: appointment.id,
           patientName: appointment.patientName,
           doctorName: appointment.doctor?.name || "N/A",
-          clinicName: appointment.doctor?.clinicName || "N/A",
+          clinicName: appointment.clinicName || "N/A",
           date: "Error",
           displayDate: "Error",
           time: "Error",
-          status: appointment.status || "Scheduled",
+          status: appointment.status !== undefined ? appointment.status : 0,
           doctor: appointment.doctor,
         };
       }
@@ -156,36 +185,49 @@ function Appointments() {
   );
 
   return (
-    <Container pt={20} fluid maw={1232}>
+    <Container pt={12} fluid maw={1232}>
       <Stack>
-        <Title order={2}>Appointments</Title>
+        <Title fz={"24px"} order={2}>
+          Appointments
+        </Title>
 
-        <Group mt={60} justify="space-between">
-          <Select
-            w={200}
-            size="lg"
-            radius="md"
-            data={selectData}
-            placeholder="Select clinic or doctor"
-            disabled={isLoadingClinics}
-            error={clinicsError?.message}
-            onChange={handleSelect}
-            value={
-              selectedDoctorId
-                ? `doctor-${selectedDoctorId}`
-                : selectedClinicId
-                ? `clinic-${selectedClinicId}`
-                : "all"
-            }
-            comboboxProps={{ width: 500, position: "bottom-start" }}
-            styles={{
-              dropdown: {
-                borderRadius: "var(--mantine-radius-md)",
-                boxShadow: "var(--mantine-shadow-md)",
-                minWidth: "200px",
-              },
-            }}
-          />
+        <Group mt={40} justify="space-between">
+          <Group gap="md">
+            <TextInput
+              size="lg"
+              placeholder="Search by patient name or appointment ID..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              leftSection={<IconSearch size={16} />}
+              style={{ flex: 1, maxWidth: 300 }}
+              radius="md"
+            />
+            <Select
+              w={200}
+              size="lg"
+              radius="md"
+              data={selectData}
+              placeholder="Select clinic or doctor"
+              disabled={isLoadingClinics}
+              error={clinicsError?.message}
+              onChange={handleSelect}
+              value={
+                selectedDoctorId
+                  ? `doctor-${selectedDoctorId}`
+                  : selectedClinicId
+                  ? `clinic-${selectedClinicId}`
+                  : "all"
+              }
+              comboboxProps={{ width: 500, position: "bottom-start" }}
+              styles={{
+                dropdown: {
+                  borderRadius: "var(--mantine-radius-md)",
+                  boxShadow: "var(--mantine-shadow-md)",
+                  minWidth: "200px",
+                },
+              }}
+            />
+          </Group>
 
           <Button
             onClick={openDrawer}
@@ -198,13 +240,16 @@ function Appointments() {
           </Button>
         </Group>
 
-        <Paper withBorder radius="md" p="md" shadow="xs">
+        <Paper withBorder radius="md" p="md">
           {isLoadingAppointments ? (
             <div>Loading appointments...</div>
           ) : appointmentsError ? (
             <div>Error loading appointments: {appointmentsError.message}</div>
           ) : (
-            <AppointmentsTable appointments={formattedAppointments} />
+            <AppointmentsTable
+              appointments={formattedAppointments}
+              searchQuery={searchQuery}
+            />
           )}
         </Paper>
 

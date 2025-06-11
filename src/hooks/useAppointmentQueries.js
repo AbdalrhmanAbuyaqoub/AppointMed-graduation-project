@@ -62,6 +62,17 @@ export function useAppointmentQueries() {
     });
   };
 
+  // Query for getting appointment status
+  const getAppointmentStatus = (id) => {
+    return useQuery({
+      queryKey: ["appointment-status", id],
+      queryFn: () => appointmentService.getAppointmentStatus(id),
+      enabled: !!id,
+      refetchInterval: 30000, // Refetch every 30 seconds
+      refetchOnWindowFocus: true,
+    });
+  };
+
   // Mutation for creating a new appointment
   const createAppointment = useMutation({
     mutationFn: appointmentService.createAppointment,
@@ -111,6 +122,17 @@ export function useAppointmentQueries() {
     },
   });
 
+  // Mutation for updating appointment status
+  const updateAppointmentStatus = useMutation({
+    mutationFn: ({ appointmentId, newStatus }) =>
+      appointmentService.updateAppointmentStatus(appointmentId, newStatus),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        predicate: (query) => query.queryKey[0] === "appointments",
+      });
+    },
+  });
+
   return {
     // Queries
     appointments,
@@ -120,11 +142,13 @@ export function useAppointmentQueries() {
     getAppointmentsByClinic,
     getAppointmentsByDoctor,
     getAppointmentsByUser,
+    getAppointmentStatus,
 
     // Mutations
     createAppointment,
     createAppointmentWithPatient,
     updateAppointment,
     deleteAppointment,
+    updateAppointmentStatus,
   };
 }

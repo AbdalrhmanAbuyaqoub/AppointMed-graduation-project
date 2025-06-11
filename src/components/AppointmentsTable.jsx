@@ -6,17 +6,24 @@ import {
   Badge,
   Menu,
   Stack,
+  Divider,
   Center,
   ActionIcon,
   SegmentedControl,
   Modal,
 } from "@mantine/core";
-import { IconEdit, IconTrash, IconCaretDownFilled } from "@tabler/icons-react";
+import {
+  IconEdit,
+  IconTrash,
+  IconCaretDownFilled,
+  IconDotsVertical,
+} from "@tabler/icons-react";
 import { DatePicker } from "@mantine/dates";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAppointmentQueries } from "../hooks/useAppointmentQueries";
 import { notifications } from "@mantine/notifications";
 import AppointmentForm from "./AppointmentForm";
+import AppointmentDetailsDrawer from "./AppointmentDetailsDrawer";
 
 // Helper function to get date ranges
 const getDateRange = (range) => {
@@ -60,14 +67,24 @@ const normalizeDate = (date) => {
   return normalized;
 };
 
-function EmptyState() {
+function EmptyState({ searchQuery, hasFilters }) {
+  const getMessage = () => {
+    if (searchQuery) {
+      return "No appointments found matching your search";
+    }
+    if (hasFilters) {
+      return "No appointments found with the current filters";
+    }
+    return "No appointments found";
+  };
+
   return (
     <Table.Tr>
       <Table.Td colSpan={7}>
         <Center h={100}>
           <Stack align="center" gap="md">
             <Text size="lg" fw={500} c="dimmed">
-              No appointments found
+              {getMessage()}
             </Text>
           </Stack>
         </Center>
@@ -76,15 +93,44 @@ function EmptyState() {
   );
 }
 
-function AppointmentsTable({ appointments = [], onAppointmentClick }) {
+function AppointmentsTable({
+  appointments = [],
+  onAppointmentClick,
+  searchQuery = "",
+}) {
   const [statusFilter, setStatusFilter] = useState("all");
   const [dateRange, setDateRange] = useState([null, null]);
   const [dateMenuOpened, setDateMenuOpened] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDetailsDrawerOpen, setIsDetailsDrawerOpen] = useState(false);
+  const [filteredAppointments, setFilteredAppointments] =
+    useState(appointments);
 
-  const { updateAppointment, deleteAppointment } = useAppointmentQueries();
+  const { updateAppointment, deleteAppointment, updateAppointmentStatus } =
+    useAppointmentQueries();
+
+  // Status mapping
+  const statusMap = {
+    0: "Scheduled",
+    1: "Cancelled",
+    2: "Completed",
+    3: "No Show",
+  };
+
+  // Status color mapping
+  const statusColorMap = {
+    0: "blue",
+    1: "red",
+    2: "green",
+    3: "orange",
+  };
+
+  // Update filteredAppointments when appointments prop changes
+  useEffect(() => {
+    setFilteredAppointments(appointments);
+  }, [appointments]);
 
   // Handle preset date range selection
   const handleDatePreset = (preset) => {
@@ -158,40 +204,90 @@ function AppointmentsTable({ appointments = [], onAppointmentClick }) {
     }
   };
 
-  // Filter appointments based on status and date range
-  const filteredAppointments = appointments.filter((appointment) => {
-    // First check status
-    const matchesStatus =
-      statusFilter === "all" || appointment.status === statusFilter;
-    if (!matchesStatus) return false;
+  // Filter appointments based on status, date range, and search query
+  useEffect(() => {
+    const filtered = appointments.filter((appointment) => {
+      // First check status filter
+      const matchesStatus =
+        statusFilter === "all" || appointment.status === parseInt(statusFilter);
+      if (!matchesStatus) return false;
 
-    // If no date range is selected, return based on status only
-    if (!dateRange[0] || !dateRange[1]) return true;
+      // Then check search query if it exists
+      if (searchQuery) {
+        const searchLower = searchQuery.toLowerCase().trim();
 
+        // Search only in patient name and appointment ID
+        const searchableFields = [
+          appointment.patientName,
+          appointment.id?.toString(),
+        ];
+
+        // Check if any field contains the search query
+        const matchesSearch = searchableFields.some((field) =>
+          field?.toLowerCase().includes(searchLower)
+        );
+
+        if (!matchesSearch) return false;
+      }
+
+      // Finally check date range if selected
+      if (!dateRange[0] || !dateRange[1]) return true;
+
+      try {
+        // Convert appointment date string to Date object
+        const appointmentDate = normalizeDate(new Date(appointment.date));
+        const startDate = normalizeDate(dateRange[0]);
+        const endDate = normalizeDate(dateRange[1]);
+
+        // Check if date is valid
+        if (!appointmentDate || !startDate || !endDate) return true;
+
+        // Compare dates
+        return appointmentDate >= startDate && appointmentDate <= endDate;
+      } catch (e) {
+        console.error("Error filtering appointment date:", e);
+        return true;
+      }
+    });
+
+    setFilteredAppointments(filtered);
+  }, [appointments, statusFilter, searchQuery, dateRange]);
+
+  // Handle status update
+  const handleStatusUpdate = async (appointmentId, newStatus) => {
     try {
-      // Convert appointment date string to Date object
-      const appointmentDate = normalizeDate(new Date(appointment.date));
-      const startDate = normalizeDate(dateRange[0]);
-      const endDate = normalizeDate(dateRange[1]);
-
-      // Debug log
-      console.log("Filtering:", {
-        appointmentDate: appointmentDate?.toISOString(),
-        startDate: startDate?.toISOString(),
-        endDate: endDate?.toISOString(),
-        isInRange: appointmentDate >= startDate && appointmentDate <= endDate,
+      const result = await updateAppointmentStatus.mutateAsync({
+        appointmentId,
+        newStatus,
       });
 
-      // Check if date is valid
-      if (!appointmentDate || !startDate || !endDate) return true;
+      notifications.show({
+        title: "Success",
+        message: result.message || "Appointment status updated successfully",
+        color: "green",
+      });
 
-      // Compare dates
-      return appointmentDate >= startDate && appointmentDate <= endDate;
-    } catch (e) {
-      console.error("Error filtering appointment date:", e);
-      return true;
+      // Update the local appointment status
+      const updatedAppointments = filteredAppointments.map((appointment) => {
+        if (appointment.id === appointmentId) {
+          return {
+            ...appointment,
+            status: result.newStatus, // Update numeric status only
+          };
+        }
+        return appointment;
+      });
+
+      // Update the filtered appointments
+      setFilteredAppointments(updatedAppointments);
+    } catch (error) {
+      notifications.show({
+        title: "Error",
+        message: error.message || "Failed to update appointment status",
+        color: "red",
+      });
     }
-  });
+  };
 
   const handleScroll = ({ y }) => {
     // y is the vertical scroll position
@@ -205,7 +301,11 @@ function AppointmentsTable({ appointments = [], onAppointmentClick }) {
   };
 
   const handleRowClick = (appointment) => {
-    // To be implemented: show details modal or navigate
+    // Open details drawer instead of navigating to a new page
+    setSelectedAppointment(appointment);
+    setIsDetailsDrawerOpen(true);
+
+    // Also call the optional callback if provided
     if (onAppointmentClick) {
       onAppointmentClick(appointment);
     }
@@ -222,9 +322,10 @@ function AppointmentsTable({ appointments = [], onAppointmentClick }) {
             onChange={setStatusFilter}
             data={[
               { label: "All", value: "all" },
-              { label: "Scheduled", value: "Scheduled" },
-              { label: "Completed", value: "Completed" },
-              { label: "Cancelled", value: "Cancelled" },
+              { label: "Scheduled", value: "0" },
+              { label: "Completed", value: "2" },
+              { label: "Cancelled", value: "1" },
+              { label: "No Show", value: "3" },
             ]}
           />
 
@@ -251,7 +352,7 @@ function AppointmentsTable({ appointments = [], onAppointmentClick }) {
               <Stack gap="xs">
                 <Group py={"sm"} w={"100%"} justify="left">
                   <Button
-                    size="md"
+                    size="sm"
                     radius={"md"}
                     variant="subtle"
                     onClick={() => handleDatePreset("today")}
@@ -259,7 +360,7 @@ function AppointmentsTable({ appointments = [], onAppointmentClick }) {
                     Today
                   </Button>
                   <Button
-                    size="md"
+                    size="sm"
                     radius={"md"}
                     variant="subtle"
                     onClick={() => handleDatePreset("this-week")}
@@ -268,7 +369,7 @@ function AppointmentsTable({ appointments = [], onAppointmentClick }) {
                   </Button>
                   <Button
                     radius={"md"}
-                    size="md"
+                    size="sm"
                     variant="subtle"
                     onClick={() => handleDatePreset("this-month")}
                   >
@@ -276,7 +377,7 @@ function AppointmentsTable({ appointments = [], onAppointmentClick }) {
                   </Button>
                 </Group>
                 <DatePicker
-                  size="md"
+                  size="sm"
                   type="range"
                   value={dateRange}
                   onChange={(newRange) => {
@@ -308,41 +409,111 @@ function AppointmentsTable({ appointments = [], onAppointmentClick }) {
             <Table.Th>Date</Table.Th>
             <Table.Th>Time</Table.Th>
             <Table.Th>Status</Table.Th>
+            <Table.Th>Actions</Table.Th>
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
           {filteredAppointments.length === 0 ? (
-            <EmptyState />
+            <EmptyState
+              searchQuery={searchQuery}
+              hasFilters={
+                statusFilter !== "all" || (dateRange[0] && dateRange[1])
+              }
+            />
           ) : (
-            filteredAppointments.map((appointment) => (
-              <Table.Tr
-                key={appointment.id}
-                style={{ cursor: "pointer" }}
-                onClick={() => handleRowClick(appointment)}
-              >
-                <Table.Td>{appointment.id}</Table.Td>
-                <Table.Td>{appointment.patientName}</Table.Td>
-                <Table.Td>{appointment.doctorName}</Table.Td>
-                <Table.Td>{appointment.clinicName}</Table.Td>
-                <Table.Td>
-                  {appointment.displayDate || appointment.date}
-                </Table.Td>
-                <Table.Td>{appointment.time}</Table.Td>
-                <Table.Td>
-                  <Badge
-                    color={
-                      appointment.status === "Completed"
-                        ? "green"
-                        : appointment.status === "Cancelled"
-                        ? "red"
-                        : "blue"
-                    }
-                  >
-                    {appointment.status}
-                  </Badge>
-                </Table.Td>
-              </Table.Tr>
-            ))
+            filteredAppointments.map((appointment) => {
+              // Use only numeric status
+              const currentStatus = appointment.status;
+              const statusText = statusMap[currentStatus] || "Scheduled";
+              const statusColor = statusColorMap[currentStatus] || "blue";
+
+              return (
+                <Table.Tr
+                  key={appointment.id}
+                  style={{ cursor: "pointer" }}
+                  onClick={() => handleRowClick(appointment)}
+                >
+                  <Table.Td>{appointment.id}</Table.Td>
+                  <Table.Td>{appointment.patientName}</Table.Td>
+                  <Table.Td>{appointment.doctorName}</Table.Td>
+                  <Table.Td>{appointment.clinicName}</Table.Td>
+                  <Table.Td>
+                    {appointment.displayDate || appointment.date}
+                  </Table.Td>
+                  <Table.Td>{appointment.time}</Table.Td>
+                  <Table.Td>
+                    <Badge color={statusColor}>{statusText}</Badge>
+                  </Table.Td>
+                  <Table.Td>
+                    <Group gap="xs" onClick={(e) => e.stopPropagation()}>
+                      <Menu shadow="md" width={200}>
+                        <Menu.Target>
+                          <ActionIcon variant="subtle" color="gray">
+                            <IconDotsVertical size={16} />
+                          </ActionIcon>
+                        </Menu.Target>
+
+                        <Menu.Dropdown>
+                          <Menu.Label>Update Status</Menu.Label>
+                          <Menu.Item
+                            onClick={() =>
+                              handleStatusUpdate(appointment.id, 0)
+                            }
+                            color="blue"
+                          >
+                            Mark as Scheduled
+                          </Menu.Item>
+                          <Menu.Item
+                            onClick={() =>
+                              handleStatusUpdate(appointment.id, 1)
+                            }
+                            color="red"
+                          >
+                            Mark as Cancelled
+                          </Menu.Item>
+                          <Menu.Item
+                            onClick={() =>
+                              handleStatusUpdate(appointment.id, 2)
+                            }
+                            color="green"
+                          >
+                            Mark as Completed
+                          </Menu.Item>
+                          <Menu.Item
+                            onClick={() =>
+                              handleStatusUpdate(appointment.id, 3)
+                            }
+                            color="orange"
+                          >
+                            Mark as No Show
+                          </Menu.Item>
+
+                          <Menu.Divider />
+
+                          <Menu.Label>Actions</Menu.Label>
+                          <Menu.Item
+                            leftSection={<IconEdit size={14} />}
+                            onClick={() => handleEdit(appointment)}
+                          >
+                            Edit
+                          </Menu.Item>
+                          <Menu.Item
+                            leftSection={<IconTrash size={14} />}
+                            color="red"
+                            onClick={() => {
+                              setSelectedAppointment(appointment);
+                              setIsDeleteModalOpen(true);
+                            }}
+                          >
+                            Delete
+                          </Menu.Item>
+                        </Menu.Dropdown>
+                      </Menu>
+                    </Group>
+                  </Table.Td>
+                </Table.Tr>
+              );
+            })
           )}
         </Table.Tbody>
       </Table>
@@ -398,6 +569,21 @@ function AppointmentsTable({ appointments = [], onAppointmentClick }) {
           </Group>
         </Stack>
       </Modal>
+
+      {/* Appointment Details Drawer */}
+      <AppointmentDetailsDrawer
+        opened={isDetailsDrawerOpen}
+        onClose={() => setIsDetailsDrawerOpen(false)}
+        appointment={selectedAppointment}
+        onEdit={() => {
+          setIsDetailsDrawerOpen(false);
+          setIsEditModalOpen(true);
+        }}
+        onDelete={() => {
+          setIsDetailsDrawerOpen(false);
+          setIsDeleteModalOpen(true);
+        }}
+      />
     </Stack>
   );
 }
