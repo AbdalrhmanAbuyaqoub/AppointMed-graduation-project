@@ -69,10 +69,12 @@ function Clinics() {
 
   // Render clinics grid
   return (
-    <Container pt={20} maw={1232} fluid>
+    <Container pt={12} maw={1232} fluid>
       <Stack>
-        <Title order={2}>Clinics Management</Title>
-        <Group mt={60} justify="space-between">
+        <Title fz={"24px"} fw={700} order={2}>
+          Clinics Management
+        </Title>
+        <Group mt={40} justify="space-between">
           <TextInput
             placeholder="Search clinics..."
             value={searchQuery}
@@ -93,7 +95,7 @@ function Clinics() {
           </Button>
         </Group>
 
-        <Divider mb={20} />
+        <Divider />
 
         {!clinics || clinics.length === 0 ? (
           renderEmptyState("No clinics found.")

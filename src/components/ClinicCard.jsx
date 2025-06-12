@@ -11,7 +11,7 @@ export function ClinicCard({ clinic }) {
   return (
     <Card
       ref={ref}
-      shadow={hovered ? "md" : "sm"}
+      // shadow={hovered ? "md" : "sm"}
       padding="lg"
       radius="md"
       withBorder

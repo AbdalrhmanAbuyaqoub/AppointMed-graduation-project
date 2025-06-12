@@ -6,7 +6,7 @@
   "homepage": "https://abdalrhmanabuyaqoub.github.io/graduation-front/",
   "scripts": {
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist",    
+    "deploy": "gh-pages -d dist",
     "dev": "BROWSER=google-chrome vite",
     "build": "vite build",
     "preview": "vite preview",
@@ -45,6 +45,7 @@
     "postcss-preset-mantine": "1.17.0",
     "postcss-simple-vars": "^7.0.1",
     "vite": "^6.3.5",
-    "vite-plugin-inspect": "^11.0.1"
+    "vite-plugin-inspect": "^11.0.1",
+    "vite-plugin-svgr": "^4.3.0"
   }
 }
