@@ -70,9 +70,9 @@ function NavbarLink({ icon: Icon, label, active, onClick, expanded }) {
 const navLinks = [
   { icon: IconLayoutGrid, label: "Dashboard", path: "/dashboard" },
   { icon: IconCalendarEvent, label: "Appointments", path: "/appointments" },
+  { icon: IconUsers, label: "Patients", path: "/patients" },
   { icon: IconBuildingHospital, label: "Clinics", path: "/clinics" },
   { icon: IconStethoscope, label: "Doctors", path: "/doctors" },
-  { icon: IconUsers, label: "Patients", path: "/patients" },
 ];
 
 export function NavbarMinimal({

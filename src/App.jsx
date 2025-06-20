@@ -3,7 +3,7 @@ import "@mantine/notifications/styles.css";
 import { MantineProvider } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
 import { theme } from "./theme";
-import { BrowserRouter } from "react-router-dom";
+import { HashRouter as Router } from "react-router-dom";
 import { AppRoutes } from "./routes.jsx";
 import { useInitAuth } from "./hooks/useInitAuth";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -18,12 +18,12 @@ export default function App() {
       <MantineProvider theme={theme}>
         <Notifications position="bottom-right" />
         <ErrorBoundary>
-          <BrowserRouter basename="/graduation-front">
+          <Router basename="/graduation-front">
             <div style={{ position: "relative", minHeight: "100vh" }}>
               <LoadingOverlay visible={isLoading} />
               <AppRoutes />
             </div>
-          </BrowserRouter>
+          </Router>
         </ErrorBoundary>
       </MantineProvider>
     </QueryProvider>
