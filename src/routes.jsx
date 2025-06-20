@@ -42,6 +42,14 @@ export const AppRoutes = () => {
             </RouteGuard>
           }
         />
+        <Route
+          path={ROUTES.REGISTER}
+          element={
+            <RouteGuard>
+              <LazyComponents.Register />
+            </RouteGuard>
+          }
+        />
 
         {/* User routes - accessible by both user and admin roles */}
         <Route
@@ -76,6 +84,7 @@ export const AppRoutes = () => {
             path={ROUTES.DOCTOR_DETAILS}
             element={<LazyComponents.DoctorDetails />}
           />
+          <Route path={ROUTES.PATIENTS} element={<LazyComponents.Patients />} />
         </Route>
 
         {/* Default route */}

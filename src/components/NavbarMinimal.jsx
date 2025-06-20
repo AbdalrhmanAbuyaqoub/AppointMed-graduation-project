@@ -5,6 +5,7 @@ import {
   IconLayoutGrid,
   IconBuildingHospital,
   IconStethoscope,
+  IconUsers,
 } from "@tabler/icons-react";
 import {
   Title,
@@ -24,6 +25,7 @@ import { useHover } from "@mantine/hooks";
 import { useNavigate, useLocation } from "react-router-dom";
 import { theme } from "../theme";
 import LogoSvg from "../assets/logo.svg?react";
+import BaseLogoSvg from "../assets/baseLogo.svg?react";
 
 function NavbarLink({ icon: Icon, label, active, onClick, expanded }) {
   const { hovered, ref } = useHover();
@@ -70,6 +72,7 @@ const navLinks = [
   { icon: IconCalendarEvent, label: "Appointments", path: "/appointments" },
   { icon: IconBuildingHospital, label: "Clinics", path: "/clinics" },
   { icon: IconStethoscope, label: "Doctors", path: "/doctors" },
+  { icon: IconUsers, label: "Patients", path: "/patients" },
 ];
 
 export function NavbarMinimal({
@@ -112,13 +115,7 @@ export function NavbarMinimal({
   const navContent = (
     <Stack>
       <Group ml={5} gap={4}>
-        <LogoSvg />
-        {isExpanded && (
-          <Title order={1} fz="24" fw={700} ff="Plus Jakarta Sans">
-            <span style={{ color: "#4C1D95" }}>Appoint</span>
-            <span style={{ color: "#8B5CF6" }}>Med</span>
-          </Title>
-        )}
+        {isExpanded ? <LogoSvg /> : <BaseLogoSvg />}
       </Group>
       <Space h={30} />
       {navigationContent}

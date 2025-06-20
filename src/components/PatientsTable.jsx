@@ -1,0 +1,115 @@
+import {
+  Table,
+  Text,
+  Badge,
+  Group,
+  Avatar,
+  Skeleton,
+  Stack,
+  Center,
+} from "@mantine/core";
+import { useUserQueries } from "../hooks/useUserQueries";
+import { IconUserOff } from "@tabler/icons-react";
+import { useNavigate } from "react-router-dom";
+
+export function PatientsTable({ searchQuery = "" }) {
+  const { patients, isLoading } = useUserQueries();
+  const navigate = useNavigate();
+
+  const handlePatientClick = (patientId) => {
+    // TODO: Navigate to patient details page when implemented
+    console.log("Navigate to patient:", patientId);
+  };
+
+  // Filter patients based on search query
+  const filteredPatients = patients.filter((patient) => {
+    const searchLower = searchQuery.toLowerCase();
+    return (
+      patient.fullName.toLowerCase().includes(searchLower) ||
+      patient.email.toLowerCase().includes(searchLower) ||
+      patient.username.toLowerCase().includes(searchLower)
+    );
+  });
+
+  // Loading state with skeleton
+  if (isLoading) {
+    return (
+      <Stack>
+        <Skeleton height={40} radius="sm" />
+        {[1, 2, 3].map((i) => (
+          <Skeleton key={i} height={50} radius="sm" mt="sm" />
+        ))}
+      </Stack>
+    );
+  }
+
+  return (
+    <Table highlightOnHover verticalSpacing="sm" horizontalSpacing="lg">
+      <Table.Thead>
+        <Table.Tr>
+          <Table.Th c="dimmed">Name</Table.Th>
+          <Table.Th c="dimmed">Email</Table.Th>
+        </Table.Tr>
+      </Table.Thead>
+      <Table.Tbody>
+        {filteredPatients.length === 0 ? (
+          <Table.Tr>
+            <Table.Td colSpan={4}>
+              <Center py="xl">
+                <Stack align="center" gap="md">
+                  <IconUserOff size={30} opacity={0.4} />
+                  <Text size="sm" c="dimmed">
+                    {patients.length === 0
+                      ? "No patients found"
+                      : "No patients match your search"}
+                  </Text>
+                </Stack>
+              </Center>
+            </Table.Td>
+          </Table.Tr>
+        ) : (
+          filteredPatients.map((patient) => (
+            <Table.Tr
+              key={patient.id}
+              style={{ cursor: "pointer" }}
+              onClick={() => handlePatientClick(patient.id)}
+            >
+              <Table.Td>
+                <Group gap="sm">
+                  <Avatar
+                    style={{ cursor: "pointer" }}
+                    onClick={() => handlePatientClick(patient.id)}
+                    size="md"
+                    radius="xl"
+                    variant="filled"
+                  >
+                    <Text fz="sm" fw={600} c={"white"}>
+                      {patient.fullName
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")
+                        .toUpperCase()}
+                    </Text>
+                  </Avatar>
+                  <Text
+                    size="sm"
+                    fw={600}
+                    style={{ cursor: "pointer" }}
+                    onClick={() => handlePatientClick(patient.id)}
+                  >
+                    {patient.fullName}
+                  </Text>
+                </Group>
+              </Table.Td>
+              <Table.Td>
+                <Text size="sm" c="dimmed">
+                  {patient.email}
+                </Text>
+              </Table.Td>
+            </Table.Tr>
+          ))
+        )}
+      </Table.Tbody>
+    </Table>
+  );
+}

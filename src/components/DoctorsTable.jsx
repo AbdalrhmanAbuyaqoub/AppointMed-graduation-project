@@ -118,93 +118,86 @@ export function DoctorsTable({ searchQuery = "" }) {
   }
 
   return (
-    <Stack gap={0}>
-      {/* <Text fz="lg" fw={600} m={20}>
-        Doctors List
-      </Text>
-      <Divider></Divider> */}
-
-      <Table highlightOnHover verticalSpacing="sm" horizontalSpacing="lg">
-        <Table.Thead>
+    <Table highlightOnHover verticalSpacing="sm" horizontalSpacing="lg">
+      <Table.Thead>
+        <Table.Tr>
+          <Table.Th c="dimmed">Name</Table.Th>
+          <Table.Th c="dimmed">Working Days</Table.Th>
+          <Table.Th c="dimmed">Clinic</Table.Th>
+        </Table.Tr>
+      </Table.Thead>
+      <Table.Tbody>
+        {filteredDoctors.length === 0 ? (
           <Table.Tr>
-            <Table.Th c="dimmed">Name</Table.Th>
-            <Table.Th c="dimmed">Working Days</Table.Th>
-            <Table.Th c="dimmed">Clinic</Table.Th>
+            <Table.Td colSpan={3}>
+              <Center py="xl">
+                <Stack align="center" gap="md">
+                  <IconUserOff size={30} opacity={0.4} />
+                  <Text size="sm" c="dimmed">
+                    No doctors found
+                  </Text>
+                </Stack>
+              </Center>
+            </Table.Td>
           </Table.Tr>
-        </Table.Thead>
-        <Table.Tbody>
-          {filteredDoctors.length === 0 ? (
-            <Table.Tr>
-              <Table.Td colSpan={3}>
-                <Center py="xl">
-                  <Stack align="center" gap="md">
-                    <IconUserOff size={30} opacity={0.4} />
-                    <Text size="sm" c="dimmed">
-                      No doctors found
+        ) : (
+          filteredDoctors.map((doctor) => (
+            <Table.Tr
+              key={doctor.id}
+              style={{ cursor: "pointer" }}
+              onClick={() => handleDoctorClick(doctor.id)}
+            >
+              <Table.Td>
+                <Group gap="sm">
+                  <Avatar
+                    style={{ cursor: "pointer" }}
+                    onClick={() => handleDoctorClick(doctor.id)}
+                    size="md"
+                    radius="xl"
+                    variant="filled"
+                  >
+                    <Text fz="sm" fw={600} c={"white"}>
+                      {doctor.name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")
+                        .toUpperCase()}
                     </Text>
-                  </Stack>
-                </Center>
+                  </Avatar>
+                  <Text
+                    size="sm"
+                    fw={600}
+                    style={{ cursor: "pointer" }}
+                    onClick={() => handleDoctorClick(doctor.id)}
+                  >
+                    {doctor.name}
+                  </Text>
+                </Group>
+              </Table.Td>
+              <Table.Td>
+                <WorkingDaysDisplay
+                  doctorId={doctor.id}
+                  workingDays={doctorsWorkingDays[doctor.id] || []}
+                />
+              </Table.Td>
+              <Table.Td>
+                <Badge
+                  variant="light"
+                  size="lg"
+                  radius="sm"
+                  px="md"
+                  style={{
+                    cursor: "pointer",
+                  }}
+                  onClick={() => handleClinicClick(doctor.clinicId)}
+                >
+                  {doctor.clinicName}
+                </Badge>
               </Table.Td>
             </Table.Tr>
-          ) : (
-            filteredDoctors.map((doctor) => (
-              <Table.Tr
-                key={doctor.id}
-                style={{ cursor: "pointer" }}
-                onClick={() => handleDoctorClick(doctor.id)}
-              >
-                <Table.Td>
-                  <Group gap="sm">
-                    <Avatar
-                      style={{ cursor: "pointer" }}
-                      onClick={() => handleDoctorClick(doctor.id)}
-                      size="md"
-                      radius="xl"
-                      variant="filled"
-                    >
-                      <Text fz="sm" fw={600} c={"white"}>
-                        {doctor.name
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")
-                          .toUpperCase()}
-                      </Text>
-                    </Avatar>
-                    <Text
-                      size="sm"
-                      fw={600}
-                      style={{ cursor: "pointer" }}
-                      onClick={() => handleDoctorClick(doctor.id)}
-                    >
-                      {doctor.name}
-                    </Text>
-                  </Group>
-                </Table.Td>
-                <Table.Td>
-                  <WorkingDaysDisplay
-                    doctorId={doctor.id}
-                    workingDays={doctorsWorkingDays[doctor.id] || []}
-                  />
-                </Table.Td>
-                <Table.Td>
-                  <Badge
-                    variant="light"
-                    size="lg"
-                    radius="sm"
-                    px="md"
-                    style={{
-                      cursor: "pointer",
-                    }}
-                    onClick={() => handleClinicClick(doctor.clinicId)}
-                  >
-                    {doctor.clinicName}
-                  </Badge>
-                </Table.Td>
-              </Table.Tr>
-            ))
-          )}
-        </Table.Tbody>
-      </Table>
-    </Stack>
+          ))
+        )}
+      </Table.Tbody>
+    </Table>
   );
 }

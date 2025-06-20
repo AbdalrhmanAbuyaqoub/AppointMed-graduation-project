@@ -5,6 +5,7 @@ export const ROUTES = {
   // Public routes
   LANDING: "/",
   LOGIN: "/login",
+  REGISTER: "/register",
 
   // User routes
   CHAT: "/chat",
@@ -16,6 +17,7 @@ export const ROUTES = {
   CLINIC_DETAILS: "/clinics/:id",
   DOCTORS: "/doctors",
   DOCTOR_DETAILS: "/doctors/:id",
+  PATIENTS: "/patients",
 };
 
 // Lazy-loaded components with better naming
@@ -23,6 +25,7 @@ export const LazyComponents = {
   // Public pages
   Landing: lazy(() => import("../pages/Landing")),
   Login: lazy(() => import("../pages/Login")),
+  Register: lazy(() => import("../pages/Register")),
 
   // User pages
   Chat: lazy(() => import("../pages/Chat")),
@@ -34,6 +37,7 @@ export const LazyComponents = {
   ClinicDetails: lazy(() => import("../pages/ClinicDetails")),
   Doctors: lazy(() => import("../pages/Doctors")),
   DoctorDetails: lazy(() => import("../pages/DoctorDetails")),
+  Patients: lazy(() => import("../pages/Patients")),
 };
 
 // Get default route based on user role

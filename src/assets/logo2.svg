@@ -1,0 +1,60 @@
+<svg
+  width="40"
+  height="40"
+  viewBox="0 0 68 68"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <defs>
+    <linearGradient
+      id="logo-gradient"
+      x1="68"
+      y1="0"
+      x2="0"
+      y2="68"
+      gradientUnits="userSpaceOnUse"
+    >
+      <stop stop-color="#A78BFA" />
+      <stop offset="1" stop-color="#7C3AED" />
+    </linearGradient>
+  </defs>
+
+  <!-- Calendar body with top rings -->
+  <path
+    d="M54 8H50V2C50 0.89543 49.1046 0 48 0C46.8954 0 46 0.89543 46 2V8H22V2C22 0.89543 21.1046 0 20 0C18.8954 0 18 0.89543 18 2V8H14C8.47715 8 4 12.4772 4 18V54C4 59.5228 8.47715 64 14 64H54C59.5228 64 64 59.5228 64 54V18C64 12.4772 59.5228 8 54 8H54Z"
+    fill="url(#logo-gradient)"
+  />
+
+  <path
+    d="M48 33H39V23"
+    stroke="white"
+    stroke-opacity="0.8"
+    stroke-width="4.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M20 35H29V44"
+    stroke="white"
+    stroke-opacity="0.8"
+    stroke-width="4.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M34 20V30H23"
+    stroke="white"
+    stroke-opacity="0.8"
+    stroke-width="4.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M34 48V38H44"
+    stroke="white"
+    stroke-opacity="0.8"
+    stroke-width="4.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+</svg>
