@@ -1,1 +1,0 @@
-import{j as r,C as a,q as s,T as e,P as t}from"./index-RKo_O0CB.js";function i(){return r.jsx(a,{fluid:!0,maw:1232,children:r.jsxs(s,{gap:100,children:[r.jsx(e,{order:2,children:"Dashboard"}),r.jsx(t,{withBorder:!0,radius:"md",h:500,shadow:"sm"})]})})}export{i as default};
