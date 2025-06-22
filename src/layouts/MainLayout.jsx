@@ -2,14 +2,14 @@ import { AppShell, Container, Group, Burger } from "@mantine/core";
 import { Outlet } from "react-router-dom";
 import { NavbarMinimal } from "../components/NavbarMinimal";
 import React, { useState } from "react";
-import { IconLogout, IconUser } from "@tabler/icons-react";
+import { IconLogout, IconUser, IconSettings } from "@tabler/icons-react";
 import { useAuthentication } from "../hooks/useAuthentication";
 import { ProfileMenu } from "../components/ProfileMenu";
 import { theme } from "../theme";
 import { useViewportSize } from "@mantine/hooks";
 
 export function MainLayout() {
-  const { handleLogout } = useAuthentication();
+  const { handleLogout, user } = useAuthentication();
   const [expanded, setExpanded] = useState(false);
   const [mobileOpened, setMobileOpened] = useState(false);
   const { width } = useViewportSize();
@@ -18,14 +18,18 @@ export function MainLayout() {
   const adminMenuItems = [
     {
       label: "Profile",
-      icon: <IconUser size={18} />,
+      icon: <IconUser size={20} />,
+      onClick: () => {},
+    },
+    {
+      label: "Settings",
+      icon: <IconSettings size={20} />,
       onClick: () => {},
     },
     {
       label: "Log Out",
-      icon: <IconLogout size={18} />,
+      icon: <IconLogout size={20} />,
       onClick: handleLogout,
-      color: "red",
     },
   ];
 
@@ -70,7 +74,7 @@ export function MainLayout() {
                 size="sm"
               />
             </Group>
-            <ProfileMenu label="Admin Menu" menuItems={adminMenuItems} />
+            <ProfileMenu menuItems={adminMenuItems} user={user} />
           </Group>
         </Container>
       </AppShell.Header>

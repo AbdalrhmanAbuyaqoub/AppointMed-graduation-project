@@ -27,19 +27,18 @@ function Chat() {
   const menuItems = [
     {
       label: "Profile",
-      icon: <IconUser size={14} />,
+      icon: <IconUser size={20} />,
       onClick: () => {},
     },
     {
       label: "Settings",
-      icon: <IconSettings size={14} />,
+      icon: <IconSettings size={20} />,
       onClick: () => {},
     },
     {
       label: "Log Out",
-      icon: <IconLogout size={14} />,
+      icon: <IconLogout size={20} />,
       onClick: handleLogout,
-      color: "red",
     },
   ];
 
@@ -84,10 +83,7 @@ function Chat() {
         {/* Left side illustration */}
         <Paper w="70%" radius="md" bg="transparent" pos="relative">
           <Box pos="absolute" top={20} left={30}>
-            <ProfileMenu
-              userRole={user?.role || "user"}
-              menuItems={menuItems}
-            />
+            <ProfileMenu menuItems={menuItems} user={user} />
           </Box>
           <Flex align="center" justify="center" h="100%">
             <Image

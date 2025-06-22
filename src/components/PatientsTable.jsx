@@ -7,18 +7,35 @@ import {
   Skeleton,
   Stack,
   Center,
+  Menu,
+  ActionIcon,
+  Switch,
 } from "@mantine/core";
 import { useUserQueries } from "../hooks/useUserQueries";
-import { IconUserOff } from "@tabler/icons-react";
+import {
+  IconDotsVertical,
+  IconEdit,
+  IconUser,
+  IconUserOff,
+  IconTrash,
+} from "@tabler/icons-react";
 import { useNavigate } from "react-router-dom";
 
 export function PatientsTable({ searchQuery = "" }) {
-  const { patients, isLoading } = useUserQueries();
+  const { patients, isLoading, banPatient, unbanPatient } = useUserQueries();
   const navigate = useNavigate();
 
   const handlePatientClick = (patientId) => {
     // TODO: Navigate to patient details page when implemented
     console.log("Navigate to patient:", patientId);
+  };
+
+  const handleStatusToggle = (patientId, currentBannedStatus) => {
+    if (currentBannedStatus) {
+      unbanPatient(patientId);
+    } else {
+      banPatient(patientId);
+    }
   };
 
   // Filter patients based on search query
@@ -27,7 +44,9 @@ export function PatientsTable({ searchQuery = "" }) {
     return (
       patient.fullName.toLowerCase().includes(searchLower) ||
       patient.email.toLowerCase().includes(searchLower) ||
-      patient.username.toLowerCase().includes(searchLower)
+      (patient.phoneNumber &&
+        patient.phoneNumber.toLowerCase().includes(searchLower)) ||
+      (patient.address && patient.address.toLowerCase().includes(searchLower))
     );
   });
 
@@ -49,6 +68,8 @@ export function PatientsTable({ searchQuery = "" }) {
         <Table.Tr>
           <Table.Th c="dimmed">Name</Table.Th>
           <Table.Th c="dimmed">Email</Table.Th>
+          <Table.Th c="dimmed">Phone</Table.Th>
+          <Table.Th c="dimmed">Status</Table.Th>
         </Table.Tr>
       </Table.Thead>
       <Table.Tbody>
@@ -105,6 +126,30 @@ export function PatientsTable({ searchQuery = "" }) {
                 <Text size="sm" c="dimmed">
                   {patient.email}
                 </Text>
+              </Table.Td>
+              <Table.Td>
+                <Text size="sm" c="dimmed">
+                  {patient.phoneNumber || "N/A"}
+                </Text>
+              </Table.Td>
+              <Table.Td>
+                <Group
+                  gap="xs"
+                  align="center"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Switch
+                    checked={!patient.isBanned}
+                    onChange={() =>
+                      handleStatusToggle(patient.id, patient.isBanned)
+                    }
+                    color="green"
+                    size="sm"
+                  />
+                  <Text size="xs" c={patient.isBanned ? "red" : "dimmed"}>
+                    {patient.isBanned ? "Banned" : "Active"}
+                  </Text>
+                </Group>
               </Table.Td>
             </Table.Tr>
           ))

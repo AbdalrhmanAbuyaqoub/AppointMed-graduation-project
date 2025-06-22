@@ -48,18 +48,13 @@ const useAuthStore = create(
               return false;
             }
 
-            // Get user data from stored token
-            const token = authService.getStoredToken();
-            if (!token) {
-              throw new Error("No token available");
-            }
-
-            // Decode token to get user data
-            const user = decodeToken(token);
+            // Use the persisted user data from localStorage (via persist middleware)
+            const currentState = get();
+            const user = currentState.user;
 
             set({
               user,
-              isAuthenticated: true,
+              isAuthenticated: !!user,
               sessionChecked: true,
               isLoading: false,
               error: null,

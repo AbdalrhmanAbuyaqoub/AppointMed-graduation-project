@@ -111,7 +111,7 @@ function AppointmentsTable({
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const itemsPerPage = 20;
 
   const { updateAppointment, deleteAppointment, updateAppointmentStatus } =
     useAppointmentQueries();
@@ -414,7 +414,6 @@ function AppointmentsTable({
           </Menu>
         </Group>
       </Group>
-
       <Table verticalSpacing="sm" highlightOnHover>
         <Table.Thead>
           <Table.Tr>
@@ -425,7 +424,6 @@ function AppointmentsTable({
             <Table.Th>Date</Table.Th>
             <Table.Th>Time</Table.Th>
             <Table.Th>Status</Table.Th>
-            {/* <Table.Th>Actions</Table.Th> */}
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
@@ -458,7 +456,9 @@ function AppointmentsTable({
                   </Table.Td>
                   <Table.Td>{appointment.time}</Table.Td>
                   <Table.Td>
-                    <Badge color={statusColor}>{statusText}</Badge>
+                    <Badge size="md" color={statusColor}>
+                      {statusText}
+                    </Badge>
                   </Table.Td>
                   <Table.Td>
                     <Group gap="xs" onClick={(e) => e.stopPropagation()}>
@@ -533,32 +533,20 @@ function AppointmentsTable({
           )}
         </Table.Tbody>
       </Table>
-
       {/* Pagination */}
       {/* Display pagination info */}
       {filteredAppointments.length > 0 && (
-        <Group justify="space-between" mt="md">
-          <Text size="sm" c="dimmed">
-            Showing {startIndex + 1} to{" "}
-            {Math.min(endIndex, filteredAppointments.length)} of{" "}
-            {filteredAppointments.length} appointments
-          </Text>
+        <Group justify="center" mt="lg">
           <Pagination
             value={currentPage}
             onChange={setCurrentPage}
             total={totalPages}
             size="sm"
             radius="md"
-            withEdges
           />
-          {totalPages > 1 && (
-            <Text size="sm" c="dimmed">
-              Page {currentPage} of {totalPages}
-            </Text>
-          )}
         </Group>
       )}
-
+      {/* TODO: add appointment details to form , make sure it works */}
       {/* Edit Modal */}
       <Modal
         opened={isEditModalOpen}
@@ -580,7 +568,6 @@ function AppointmentsTable({
           />
         )}
       </Modal>
-
       {/* Delete Confirmation Modal */}
       <Modal
         opened={isDeleteModalOpen}
@@ -610,7 +597,6 @@ function AppointmentsTable({
           </Group>
         </Stack>
       </Modal>
-
       {/* Appointment Details Drawer */}
       <AppointmentDetailsDrawer
         opened={isDetailsDrawerOpen}

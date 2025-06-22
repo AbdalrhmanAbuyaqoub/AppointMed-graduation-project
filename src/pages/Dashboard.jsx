@@ -1,14 +1,7 @@
 import { Container, Title, Paper, Stack } from "@mantine/core";
 
 function Dashboard() {
-  return (
-    <Container fluid maw={1232}>
-      <Stack gap={100}>
-        <Title order={2}>Dashboard</Title>
-        <Paper withBorder radius={"md"} h={500} shadow="sm"></Paper>
-      </Stack>
-    </Container>
-  );
+  return <Container fluid maw={1232}></Container>;
 }
 
 export default Dashboard;

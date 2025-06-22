@@ -30,10 +30,11 @@ api.interceptors.request.use(
 /**
  * @typedef {Object} Patient
  * @property {string} id - The patient's ID
- * @property {string} username - The patient's username
- * @property {string} role - The patient's role (should be "Patient")
  * @property {string} fullName - The patient's full name
  * @property {string} email - The patient's email address
+ * @property {string|null} phoneNumber - The patient's phone number (can be null)
+ * @property {string} address - The patient's address
+ * @property {boolean} isBanned - Whether the patient is banned
  */
 
 export const userService = {
@@ -43,7 +44,7 @@ export const userService = {
    */
   getPatients: async () => {
     try {
-      const response = await api.get("/Users/get-patients");
+      const response = await api.get("/Users/get-ALL-patients");
 
       // The API returns data in the format:
       // {
@@ -53,10 +54,11 @@ export const userService = {
       //   "result": [
       //     {
       //       "id": "04d14f5e-b2a5-4e8d-83af-5a701f8814d3",
-      //       "username": "newtest",
-      //       "role": "Patient",
       //       "fullName": "test test",
-      //       "email": "newtest@example.com"
+      //       "email": "newtest@example.com",
+      //       "phoneNumber": null,
+      //       "address": "test",
+      //       "isBanned": true
       //     }
       //   ]
       // }
@@ -75,6 +77,38 @@ export const userService = {
       console.error("Error fetching patients:", error);
       throw new Error(
         error.response?.data?.message || "Failed to fetch patients"
+      );
+    }
+  },
+
+  /**
+   * Ban a patient by ID
+   * @param {string} userId - The patient's ID
+   * @returns {Promise<any>}
+   */
+  banPatient: async (userId) => {
+    try {
+      const response = await api.post(`/Users/ban/${userId}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error banning patient:", error);
+      throw new Error(error.response?.data?.message || "Failed to ban patient");
+    }
+  },
+
+  /**
+   * Unban a patient by ID
+   * @param {string} userId - The patient's ID
+   * @returns {Promise<any>}
+   */
+  unbanPatient: async (userId) => {
+    try {
+      const response = await api.post(`/Users/unban/${userId}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error unbanning patient:", error);
+      throw new Error(
+        error.response?.data?.message || "Failed to unban patient"
       );
     }
   },

@@ -143,6 +143,7 @@ function CreateAppointmentDrawer({ opened, onClose }) {
 
   return (
     <Drawer
+      radius="md"
       overlayProps={{
         opacity: 0.4,
       }}

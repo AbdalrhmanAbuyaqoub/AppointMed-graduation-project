@@ -9,21 +9,27 @@ import {
   Text,
   Button,
   ScrollArea,
+  Flex,
   Avatar,
   Box,
   ActionIcon,
+  Container,
   Tooltip,
+  Card,
 } from "@mantine/core";
 import {
   IconCalendar,
   IconClock,
   IconUser,
+  IconChevronRight,
   IconBuilding,
-  IconNotes,
+  IconNote,
   IconEdit,
   IconTrash,
   IconPhone,
 } from "@tabler/icons-react";
+import { useNavigate } from "react-router-dom";
+import { theme } from "../theme";
 
 function AppointmentDetailsDrawer({
   opened,
@@ -32,124 +38,144 @@ function AppointmentDetailsDrawer({
   onEdit,
   onDelete,
 }) {
+  const navigate = useNavigate();
   if (!appointment) return null;
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "Completed":
-        return "green";
-      case "Cancelled":
-        return "red";
-      default:
-        return "blue";
-    }
+  const currentStatus = appointment.status;
+
+  const statusMap = {
+    0: "Scheduled",
+    1: "Cancelled",
+    2: "Completed",
+    3: "No Show",
   };
 
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case "Completed":
-        return "✓";
-      case "Cancelled":
-        return "×";
-      default:
-        return "•";
-    }
+  // Status color mapping
+  const statusColorMap = {
+    0: "blue",
+    1: "red",
+    2: "green",
+    3: "orange",
   };
 
   return (
     <Drawer
+      offset={25}
+      radius="md"
+      shadow="xl"
+      overlayProps={{ opacity: 0.2 }}
       opened={opened}
       onClose={onClose}
-      title={"Appointment Details"}
+      styles={{
+        header: {
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          borderBottom: "1px solid var(--mantine-color-gray-3)",
+        },
+        title: {
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexGrow: 1,
+        },
+      }}
+      title={
+        <>
+          <Badge size="md" p="sm" color={statusColorMap[currentStatus]}>
+            {statusMap[currentStatus]}
+          </Badge>
+          <Group gap={0} justify="end">
+            <ActionIcon
+              radius="md"
+              variant="subtle"
+              size="lg"
+              onClick={onEdit}
+              color="dimmed"
+            >
+              <IconEdit size={20} />
+            </ActionIcon>
+            <ActionIcon
+              radius="md"
+              variant="subtle"
+              size="lg"
+              onClick={onDelete}
+              color="dimmed"
+            >
+              <IconTrash size={20} />
+            </ActionIcon>
+          </Group>
+        </>
+      }
       position="right"
       size="md"
       scrollAreaComponent={ScrollArea.Autosize}
     >
-      <Stack gap="lg" p="md">
+      <Stack gap="xs" mt="md">
         {/* Patient Information Card */}
-        <Stack gap="md">
-          <Group gap="md">
-            <Avatar size="md" radius="xl" color="blue">
-              {appointment.patientName.charAt(0)}
+        <Group
+          justify="space-between"
+          gap="md"
+          onClick={() => {
+            navigate(`/patients/${appointment.patientId}`);
+          }}
+        >
+          <Group>
+            <Avatar size="md" radius="xl" color="dimmed">
+              <IconUser size={20} />
             </Avatar>
-            <Text size="lg" fw={600}>
-              {appointment.patientName}
-            </Text>
+            <Stack gap="0" c="dimmed">
+              <Text size="lg" fw={700}>
+                {appointment.patientName}
+              </Text>
+              <Group gap="4" c="dimmed">
+                <IconPhone size={16} />
+                <Text size="sm" c="dimmed">
+                  00000fixMe000
+                  {/* TODO: Add phone number */}
+                </Text>
+              </Group>
+            </Stack>
           </Group>
-          <Group gap="xs" c="dimmed">
-            <IconPhone size={16} />
-            <Text size="sm">0585855858</Text>
-          </Group>
-          <Divider />
 
-          {/* Appointment Details */}
-          <Stack gap="xs">
-            <Group gap="xs" c="dimmed">
-              <IconCalendar size={16} />
-              <Text size="sm" fw={500}>
+          <IconChevronRight stroke={1.5} size={24} />
+        </Group>
+        <Divider my="8" />
+
+        {/* Appointment Details */}
+        <Stack>
+          <Group gap="xs" c="dimmed" align="start">
+            <IconCalendar size={24} color="black" />
+            <Stack gap="0">
+              <Text fw={500}>{appointment.time}</Text>
+              <Text fw={500} c="dimmed">
                 {appointment.displayDate || appointment.date}
               </Text>
-            </Group>
+            </Stack>
+          </Group>
 
-            <Group gap="xs" c="dimmed">
-              <IconClock size={16} />
-              <Text size="sm" fw={500}>
-                {appointment.time}
-              </Text>
-            </Group>
-
-            <Group gap="xs" c="dimmed">
-              <IconUser size={16} />
-              <Text size="sm" fw={500}>
+          <Group gap="xs" c="dimmed" align="start">
+            <IconBuilding size={24} color="black" />
+            <Stack gap="0">
+              <Text fz="xl">{appointment.clinicName}</Text>
+              <Text fw={500} c="dimmed">
                 Dr. {appointment.doctorName}
               </Text>
-            </Group>
+            </Stack>
+          </Group>
 
-            <Group gap="xs" c="dimmed">
-              <IconBuilding size={16} />
-              <Text size="sm" fw={500}>
-                {appointment.clinicName}
+          <Group align="start" gap="xs" c="dimmed">
+            <IconNote size={24} color="black" />
+            <Stack gap="0">
+              <Text fw={500}>Notes</Text>
+              <Text fw={500} c="dimmed">
+                {appointment.notes}
               </Text>
-            </Group>
-          </Stack>
-
-          <Stack gap="xs">
-            <Group gap="xs" c="dimmed">
-              <IconNotes size={16} />
-              <Text size="sm" fw={500}>
-                Notes
-              </Text>
-            </Group>
-            <Text size="sm" c="dimmed">
-              {appointment.notes}
-            </Text>
-          </Stack>
-
-          <Group justify="flex-end" mt="md">
-            <Tooltip label="Edit Appointment">
-              <ActionIcon
-                radius="md"
-                variant="subtle"
-                color="black"
-                size="lg"
-                onClick={onEdit}
-              >
-                <IconEdit size={20} />
-              </ActionIcon>
-            </Tooltip>
-            <Tooltip label="Delete Appointment">
-              <ActionIcon
-                radius="md"
-                variant="subtle"
-                color="red"
-                size="lg"
-                onClick={onDelete}
-              >
-                <IconTrash size={20} />
-              </ActionIcon>
-            </Tooltip>
+            </Stack>
           </Group>
         </Stack>
+
+        <Group justify="flex-end" mt="md"></Group>
       </Stack>
     </Drawer>
   );

@@ -51,11 +51,11 @@ export const AppRoutes = () => {
           }
         />
 
-        {/* User routes - accessible by both user and admin roles */}
+        {/* User routes - accessible by patient role only */}
         <Route
           path={ROUTES.CHAT}
           element={
-            <RouteGuard requireAuth allowedRoles={["patient", "admin"]}>
+            <RouteGuard requireAuth allowedRoles={["patient"]}>
               <LazyComponents.Chat />
             </RouteGuard>
           }
