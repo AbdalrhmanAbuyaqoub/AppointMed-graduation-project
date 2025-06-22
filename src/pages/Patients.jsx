@@ -1,18 +1,10 @@
-import {
-  Container,
-  TextInput,
-  Title,
-  Group,
-  Paper,
-  Button,
-  Stack,
-} from "@mantine/core";
-import { IconPlus, IconSearch } from "@tabler/icons-react";
-import { useState } from "react";
+import { Container, Title, Group, Paper, Button, Stack } from "@mantine/core";
+import { IconPlus } from "@tabler/icons-react";
 import { PatientsTable } from "../components/PatientsTable";
+import useSearchStore from "../store/useSearchStore";
 
 export default function Patients() {
-  const [searchQuery, setSearchQuery] = useState("");
+  const { searchQuery } = useSearchStore();
 
   const handleAddPatientClick = () => {
     // TODO: Implement add patient functionality
@@ -25,16 +17,7 @@ export default function Patients() {
         <Title fz={"24px"} order={2}>
           Patients
         </Title>
-        <Group mt={40} justify="space-between">
-          <TextInput
-            size="lg"
-            placeholder="Search patients..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            leftSection={<IconSearch size={16} />}
-            style={{ flex: 1, maxWidth: 300 }}
-            radius="md"
-          />
+        <Group mt={40} justify="flex-end">
           <Button
             size="lg"
             variant="outline"

@@ -1,6 +1,5 @@
 import {
   Container,
-  TextInput,
   Divider,
   Title,
   Group,
@@ -10,22 +9,19 @@ import {
   Modal,
   Text,
 } from "@mantine/core";
-import {
-  IconPlus,
-  IconSearch,
-  IconBuildingHospital,
-} from "@tabler/icons-react";
+import { IconPlus, IconBuildingHospital } from "@tabler/icons-react";
 import { useState } from "react";
 import { DoctorsTable } from "../components/DoctorsTable";
 import CreateDoctorDrawer from "../components/CreateDoctorDrawer";
 import { useClinicQueries } from "../hooks/useClinicQueries";
 import { useNavigate } from "react-router-dom";
 import { theme } from "../theme";
+import useSearchStore from "../store/useSearchStore";
 
 export default function Doctors() {
   const [createDrawerOpened, setCreateDrawerOpened] = useState(false);
   const [noClinicModalOpened, setNoClinicModalOpened] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const { searchQuery } = useSearchStore();
   const [doctorData, setDoctorData] = useState({
     firstName: "",
     lastName: "",
@@ -123,16 +119,7 @@ export default function Doctors() {
         <Title fz={"24px"} order={2}>
           Doctors
         </Title>
-        <Group mt={40} justify="space-between">
-          <TextInput
-            size="lg"
-            placeholder="Search doctors..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            leftSection={<IconSearch size={16} />}
-            style={{ flex: 1, maxWidth: 300 }}
-            radius="md"
-          />
+        <Group mt={40} justify="flex-end">
           <Button
             size="lg"
             variant="outline"

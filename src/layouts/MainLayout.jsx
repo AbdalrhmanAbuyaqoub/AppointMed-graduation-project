@@ -1,12 +1,18 @@
-import { AppShell, Container, Group, Burger } from "@mantine/core";
-import { Outlet } from "react-router-dom";
+import { AppShell, Container, Group, Burger, TextInput } from "@mantine/core";
+import { Outlet, useLocation } from "react-router-dom";
 import { NavbarMinimal } from "../components/NavbarMinimal";
-import React, { useState } from "react";
-import { IconLogout, IconUser, IconSettings } from "@tabler/icons-react";
+import React, { useState, useEffect } from "react";
+import {
+  IconLogout,
+  IconUser,
+  IconSettings,
+  IconSearch,
+} from "@tabler/icons-react";
 import { useAuthentication } from "../hooks/useAuthentication";
 import { ProfileMenu } from "../components/ProfileMenu";
 import { theme } from "../theme";
 import { useViewportSize } from "@mantine/hooks";
+import useSearchStore from "../store/useSearchStore";
 
 export function MainLayout() {
   const { handleLogout, user } = useAuthentication();
@@ -14,6 +20,27 @@ export function MainLayout() {
   const [mobileOpened, setMobileOpened] = useState(false);
   const { width } = useViewportSize();
   const isMobile = width < 768;
+  const location = useLocation();
+  const { searchQuery, setSearchQuery, setCurrentPage, getPlaceholder } =
+    useSearchStore();
+
+  // Determine which page we're on and if it should show search
+  const searchablePages = [
+    "/appointments",
+    "/patients",
+    "/doctors",
+    "/clinics",
+  ];
+  const currentPagePath = location.pathname;
+  const isSearchablePage = searchablePages.includes(currentPagePath);
+  const currentPageName = currentPagePath.replace("/", "");
+
+  // Update current page in store when location changes
+  useEffect(() => {
+    if (isSearchablePage) {
+      setCurrentPage(currentPageName);
+    }
+  }, [currentPagePath, isSearchablePage, currentPageName, setCurrentPage]);
 
   const adminMenuItems = [
     {
@@ -74,6 +101,20 @@ export function MainLayout() {
                 size="sm"
               />
             </Group>
+
+            {/* Search box - only shown on searchable pages */}
+            {isSearchablePage && (
+              <TextInput
+                size="md"
+                placeholder={getPlaceholder(currentPageName)}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                leftSection={<IconSearch size={16} />}
+                style={{ flex: 1, maxWidth: 400 }}
+                radius="lg"
+              />
+            )}
+
             <ProfileMenu menuItems={adminMenuItems} user={user} />
           </Group>
         </Container>

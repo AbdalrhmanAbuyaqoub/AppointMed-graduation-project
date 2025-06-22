@@ -9,22 +9,18 @@ import {
   Paper,
   Divider,
   Text,
-  TextInput,
   Center,
 } from "@mantine/core";
-import {
-  IconPlus,
-  IconSearch,
-  IconBuildingHospital,
-} from "@tabler/icons-react";
+import { IconPlus, IconBuildingHospital } from "@tabler/icons-react";
 import { ClinicCard } from "../components/ClinicCard";
 import { useClinicQueries } from "../hooks/useClinicQueries";
 import { useState } from "react";
 import { CreateClinicModal } from "../components/CreateClinicModal";
+import useSearchStore from "../store/useSearchStore";
 
 function Clinics() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const { searchQuery } = useSearchStore();
   const {
     clinics = [], // Provide default empty array
     isLoading,
@@ -74,16 +70,7 @@ function Clinics() {
         <Title fz={"24px"} fw={700} order={2}>
           Clinics Management
         </Title>
-        <Group mt={40} justify="space-between">
-          <TextInput
-            placeholder="Search clinics..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            leftSection={<IconSearch size={16} />}
-            style={{ flex: 1, maxWidth: 300 }}
-            size="lg"
-            radius="md"
-          />
+        <Group mt={40} justify="flex-end">
           <Button
             size="lg"
             radius="xl"

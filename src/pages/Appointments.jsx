@@ -6,7 +6,6 @@ import {
   Select,
   Group,
   Button,
-  TextInput,
 } from "@mantine/core";
 import { useClinicQueries } from "../hooks/useClinicQueries";
 import { useAppointmentQueries } from "../hooks/useAppointmentQueries";
@@ -14,17 +13,18 @@ import { useState, useCallback } from "react";
 import { useDisclosure } from "@mantine/hooks";
 import AppointmentsTable from "../components/AppointmentsTable";
 import CreateAppointmentDrawer from "../components/CreateAppointmentDrawer";
-import { IconPlus, IconSearch } from "@tabler/icons-react";
+import { IconPlus } from "@tabler/icons-react";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
+import useSearchStore from "../store/useSearchStore";
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
 function Appointments() {
   const [selectedClinicId, setSelectedClinicId] = useState(null);
   const [selectedDoctorId, setSelectedDoctorId] = useState(null);
-  const [searchQuery, setSearchQuery] = useState("");
+  const { searchQuery } = useSearchStore();
   const [drawerOpened, { open: openDrawer, close: closeDrawer }] =
     useDisclosure(false);
 
@@ -192,42 +192,31 @@ function Appointments() {
         </Title>
 
         <Group mt={40} justify="space-between">
-          <Group gap="md">
-            <TextInput
-              size="lg"
-              placeholder="Search by patient name or appointment ID..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              leftSection={<IconSearch size={16} />}
-              style={{ flex: 1, maxWidth: 300 }}
-              radius="md"
-            />
-            <Select
-              w={200}
-              size="lg"
-              radius="md"
-              data={selectData}
-              placeholder="Select clinic or doctor"
-              disabled={isLoadingClinics}
-              error={clinicsError?.message}
-              onChange={handleSelect}
-              value={
-                selectedDoctorId
-                  ? `doctor-${selectedDoctorId}`
-                  : selectedClinicId
-                  ? `clinic-${selectedClinicId}`
-                  : "all"
-              }
-              comboboxProps={{ width: 500, position: "bottom-start" }}
-              styles={{
-                dropdown: {
-                  borderRadius: "var(--mantine-radius-md)",
-                  boxShadow: "var(--mantine-shadow-md)",
-                  minWidth: "200px",
-                },
-              }}
-            />
-          </Group>
+          <Select
+            w={200}
+            size="lg"
+            radius="md"
+            data={selectData}
+            placeholder="Select clinic or doctor"
+            disabled={isLoadingClinics}
+            error={clinicsError?.message}
+            onChange={handleSelect}
+            value={
+              selectedDoctorId
+                ? `doctor-${selectedDoctorId}`
+                : selectedClinicId
+                ? `clinic-${selectedClinicId}`
+                : "all"
+            }
+            comboboxProps={{ width: 500, position: "bottom-start" }}
+            styles={{
+              dropdown: {
+                borderRadius: "var(--mantine-radius-md)",
+                boxShadow: "var(--mantine-shadow-md)",
+                minWidth: "200px",
+              },
+            }}
+          />
 
           <Button
             onClick={openDrawer}
