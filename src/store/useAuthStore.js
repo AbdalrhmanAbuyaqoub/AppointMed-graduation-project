@@ -17,6 +17,10 @@ const useAuthStore = create(
     persist(
       (set, get) => ({
         ...initialState,
+        hasHydrated: false,
+
+        // Set hydration state
+        setHasHydrated: (hasHydrated) => set({ hasHydrated }),
 
         // Set current user
         setUser: (user) =>
@@ -34,6 +38,13 @@ const useAuthStore = create(
 
         // Initialize auth state
         initializeAuth: async () => {
+          const currentState = get();
+
+          // Wait for hydration to complete before proceeding
+          if (!currentState.hasHydrated) {
+            return false;
+          }
+
           set({ isLoading: true });
 
           try {
@@ -49,9 +60,19 @@ const useAuthStore = create(
               return false;
             }
 
-            // Use the persisted user data from localStorage (via persist middleware)
-            const currentState = get();
+            // Get persisted user data from store
             const user = currentState.user;
+
+            // If we have a valid token but no user data, we need to fetch it
+            if (!user) {
+              set({
+                user: null,
+                isAuthenticated: false,
+                sessionChecked: true,
+                isLoading: false,
+              });
+              return false;
+            }
 
             set({
               user,
@@ -224,30 +245,33 @@ const useAuthStore = create(
 
         // Logout user
         logout: async () => {
-          console.log("🚪 Starting logout process");
           set({ isLoading: true, error: null });
 
           try {
             await authService.logout();
-            console.log("✅ Logout successful, clearing state");
 
-            // Reset to initial state but keep sessionChecked true
+            // Reset to initial state but keep sessionChecked true and don't reset hasHydrated
             set({
-              ...initialState,
-              sessionChecked: true,
+              user: null,
+              isAuthenticated: false,
               isLoading: false,
+              error: null,
+              sessionChecked: true,
+              // Keep hasHydrated as is
             });
 
             return true;
           } catch (error) {
-            console.error("❌ Logout failed:", error);
+            console.error("Logout failed:", error);
 
             // Even if API fails, clear sensitive data
             set({
-              ...initialState,
-              sessionChecked: true,
+              user: null,
+              isAuthenticated: false,
               isLoading: false,
               error: `Logout failed: ${error.message}`,
+              sessionChecked: true,
+              // Keep hasHydrated as is
             });
 
             return false;
@@ -270,37 +294,33 @@ const useAuthStore = create(
 
         // Reset store state
         reset: () => {
-          set({ ...initialState, sessionChecked: true });
+          set({
+            user: null,
+            isAuthenticated: false,
+            isLoading: false,
+            error: null,
+            sessionChecked: true,
+            // Keep hasHydrated as is
+          });
         },
       }),
       {
         name: "auth-store",
-        storage: {
-          getItem: (name) => {
-            // Only persist user data if it's a remembered session
-            if (isRememberedSession()) {
-              return localStorage.getItem(name);
-            }
-            return sessionStorage.getItem(name);
-          },
-          setItem: (name, value) => {
-            // Check if current session should be persistent
-            if (isRememberedSession()) {
-              localStorage.setItem(name, value);
-            } else {
-              sessionStorage.setItem(name, value);
-            }
-          },
-          removeItem: (name) => {
-            localStorage.removeItem(name);
-            sessionStorage.removeItem(name);
-          },
-        },
         partialize: (state) => ({
           user: state.user,
           isAuthenticated: state.isAuthenticated,
           sessionChecked: state.sessionChecked,
+          // Don't persist hasHydrated - it should reset to false on each page load
         }),
+        onRehydrateStorage: () => (state, error) => {
+          if (error) {
+            console.error("An error happened during hydration", error);
+          } else {
+            if (state) {
+              state.setHasHydrated(true);
+            }
+          }
+        },
       }
     )
   )

@@ -150,4 +150,44 @@ export const userService = {
       );
     }
   },
+
+  /**
+   * Reset user password
+   * @param {Object} passwordData - Password reset data
+   * @param {string} passwordData.currentPassword - Current password
+   * @param {string} passwordData.newPassword - New password
+   * @param {string} passwordData.confirmPassword - Confirm new password
+   * @returns {Promise<any>}
+   */
+  resetPassword: async (passwordData) => {
+    try {
+      const response = await api.put("/Users/reset-password", passwordData);
+      return response.data;
+    } catch (error) {
+      console.error("Error resetting password:", error);
+      throw new Error(
+        error.response?.data?.message || "Failed to reset password"
+      );
+    }
+  },
+
+  /**
+   * Delete user account
+   * @param {string} email - User's email
+   * @param {string} id - User's ID
+   * @returns {Promise<any>}
+   */
+  deleteAccount: async (email, id) => {
+    try {
+      const response = await api.delete(
+        `/Users/delete-user?email=${email}&id=${id}`
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error deleting account:", error);
+      throw new Error(
+        error.response?.data?.message || "Failed to delete account"
+      );
+    }
+  },
 };

@@ -95,6 +95,44 @@ export function useUserQueries() {
     },
   });
 
+  // Mutation for resetting password
+  const resetPasswordMutation = useMutation({
+    mutationFn: userService.resetPassword,
+    onSuccess: () => {
+      notifications.show({
+        title: "Success",
+        message: "Password reset successfully",
+        color: "green",
+      });
+    },
+    onError: (error) => {
+      notifications.show({
+        title: "Error",
+        message: error.message || "Failed to reset password",
+        color: "red",
+      });
+    },
+  });
+
+  // Mutation for deleting account
+  const deleteAccountMutation = useMutation({
+    mutationFn: ({ email, id }) => userService.deleteAccount(email, id),
+    onSuccess: () => {
+      notifications.show({
+        title: "Success",
+        message: "Account deleted successfully",
+        color: "green",
+      });
+    },
+    onError: (error) => {
+      notifications.show({
+        title: "Error",
+        message: error.message || "Failed to delete account",
+        color: "red",
+      });
+    },
+  });
+
   return {
     // Queries
     patients: patientsQuery.data || [], // Ensure we always return an array
@@ -106,5 +144,11 @@ export function useUserQueries() {
     // Mutations
     banPatient: banPatientMutation.mutate,
     unbanPatient: unbanPatientMutation.mutate,
+    updateProfile: updateProfileMutation.mutate,
+    resetPassword: resetPasswordMutation.mutate,
+    deleteAccount: deleteAccountMutation.mutate,
+    isUpdatingProfile: updateProfileMutation.isPending,
+    isResettingPassword: resetPasswordMutation.isPending,
+    isDeletingAccount: deleteAccountMutation.isPending,
   };
 }
