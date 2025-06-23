@@ -26,8 +26,7 @@ export function PatientsTable({ searchQuery = "" }) {
   const navigate = useNavigate();
 
   const handlePatientClick = (patientId) => {
-    // TODO: Navigate to patient details page when implemented
-    console.log("Navigate to patient:", patientId);
+    navigate(`/patients/${patientId}`);
   };
 
   const handleStatusToggle = (patientId, currentBannedStatus) => {
@@ -98,13 +97,14 @@ export function PatientsTable({ searchQuery = "" }) {
               <Table.Td>
                 <Group gap="sm">
                   <Avatar
+                    color="#e7edf6"
                     style={{ cursor: "pointer" }}
                     onClick={() => handlePatientClick(patient.id)}
                     size="md"
                     radius="xl"
                     variant="filled"
                   >
-                    <Text fz="sm" fw={600} c={"white"}>
+                    <Text fz="sm">
                       {patient.fullName
                         .split(" ")
                         .map((n) => n[0])

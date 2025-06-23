@@ -56,15 +56,6 @@ function Appointments() {
     ? clinicAppointments
     : appointments;
 
-  console.log("Displayed appointments source:", {
-    selectedDoctorId,
-    selectedClinicId,
-    appointmentsCount: appointments?.length,
-    doctorAppointmentsCount: doctorAppointments?.length,
-    clinicAppointmentsCount: clinicAppointments?.length,
-    displayedCount: displayedAppointments?.length,
-  });
-
   const handleSelect = useCallback((value) => {
     if (!value || value === "all") {
       setSelectedClinicId(null);
@@ -109,16 +100,6 @@ function Appointments() {
   // Transform appointments data to match the table's expected format
   const formattedAppointments = (displayedAppointments || []).map(
     (appointment) => {
-      console.log("Before formatting - appointment:", {
-        id: appointment.id,
-        status: appointment.status,
-        statusType: typeof appointment.status,
-        patientName: appointment.patientName,
-        doctor: appointment.doctor,
-        clinicName: appointment.clinicName,
-        doctorName: appointment.doctorName,
-        rawAppointment: appointment,
-      });
       try {
         const startDate = appointment.startDate
           ? dayjs.utc(appointment.startDate).tz(dayjs.tz.guess())
@@ -136,6 +117,10 @@ function Appointments() {
             time: "Invalid Time",
             status: appointment.status !== undefined ? appointment.status : 0,
             doctor: appointment.doctor,
+            // Preserve userId for patient navigation
+            userId: appointment.userId,
+            // Preserve patientId from API response
+            patientId: appointment.patientId,
           };
         }
 
@@ -157,14 +142,11 @@ function Appointments() {
           doctor: appointment.doctor,
           patientPhone: appointment.patientPhone,
           notes: appointment.notes,
+          // Preserve userId for patient navigation
+          userId: appointment.userId,
+          // Preserve patientId from API response
+          patientId: appointment.patientId,
         };
-        console.log("After formatting - appointment:", {
-          id: formattedAppointment.id,
-          originalStatus: appointment.status,
-          finalStatus: formattedAppointment.status,
-          statusType: typeof formattedAppointment.status,
-          patientName: formattedAppointment.patientName,
-        });
         return formattedAppointment;
       } catch (error) {
         console.error("Error formatting appointment:", error);
@@ -179,6 +161,10 @@ function Appointments() {
           time: "Error",
           status: appointment.status !== undefined ? appointment.status : 0,
           doctor: appointment.doctor,
+          // Preserve userId for patient navigation
+          userId: appointment.userId,
+          // Preserve patientId from API response
+          patientId: appointment.patientId,
         };
       }
     }

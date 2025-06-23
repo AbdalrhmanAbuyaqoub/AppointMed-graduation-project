@@ -27,6 +27,7 @@ import {
   IconEdit,
   IconTrash,
   IconPhone,
+  IconHash,
 } from "@tabler/icons-react";
 import { useNavigate } from "react-router-dom";
 import { theme } from "../theme";
@@ -39,6 +40,7 @@ function AppointmentDetailsDrawer({
   onDelete,
 }) {
   const navigate = useNavigate();
+
   if (!appointment) return null;
 
   const currentStatus = appointment.status;
@@ -116,13 +118,37 @@ function AppointmentDetailsDrawer({
         <Group
           justify="space-between"
           gap="md"
+          style={{ cursor: "pointer" }}
           onClick={() => {
-            navigate(`/patients/${appointment.patientId}`);
+            if (appointment.patientId) {
+              navigate(`/patients/${appointment.patientId}`);
+            } else {
+              console.error("No patient ID available for navigation");
+            }
           }}
         >
           <Group>
-            <Avatar size="md" radius="xl" color="dimmed">
-              <IconUser size={20} />
+            <Avatar
+              color="#e7edf6"
+              style={{ cursor: "pointer" }}
+              onClick={() => {
+                if (appointment.patientId) {
+                  navigate(`/patients/${appointment.patientId}`);
+                } else {
+                  console.error("No patient ID available for navigation");
+                }
+              }}
+              size="md"
+              radius="xl"
+              variant="filled"
+            >
+              <Text fz="sm">
+                {appointment.patientName
+                  .split(" ")
+                  .map((n) => n[0])
+                  .join("")
+                  .toUpperCase()}
+              </Text>
             </Avatar>
             <Stack gap="0" c="dimmed">
               <Text size="lg" fw={700}>
@@ -157,7 +183,7 @@ function AppointmentDetailsDrawer({
           <Group gap="xs" c="dimmed" align="start">
             <IconBuilding size={24} color="black" />
             <Stack gap="0">
-              <Text fz="xl">{appointment.clinicName}</Text>
+              <Text fw={500}>{appointment.clinicName}</Text>
               <Text fw={500} c="dimmed">
                 Dr. {appointment.doctorName}
               </Text>

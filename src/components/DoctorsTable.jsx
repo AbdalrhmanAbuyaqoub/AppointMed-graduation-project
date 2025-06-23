@@ -150,13 +150,14 @@ export function DoctorsTable({ searchQuery = "" }) {
               <Table.Td>
                 <Group gap="sm">
                   <Avatar
+                    color="#e7edf6"
                     style={{ cursor: "pointer" }}
                     onClick={() => handleDoctorClick(doctor.id)}
                     size="md"
                     radius="xl"
                     variant="filled"
                   >
-                    <Text fz="sm" fw={600} c={"white"}>
+                    <Text fz="sm">
                       {doctor.name
                         .split(" ")
                         .map((n) => n[0])

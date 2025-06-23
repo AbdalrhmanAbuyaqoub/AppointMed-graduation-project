@@ -111,7 +111,7 @@ export function MainLayout() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 leftSection={<IconSearch size={16} />}
                 style={{ flex: 1, maxWidth: 400 }}
-                radius="lg"
+                radius="xl"
               />
             )}
 

@@ -85,6 +85,10 @@ export const AppRoutes = () => {
             element={<LazyComponents.DoctorDetails />}
           />
           <Route path={ROUTES.PATIENTS} element={<LazyComponents.Patients />} />
+          <Route
+            path={ROUTES.PATIENT_DETAILS}
+            element={<LazyComponents.PatientDetails />}
+          />
         </Route>
 
         {/* Default route */}

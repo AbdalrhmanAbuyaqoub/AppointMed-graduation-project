@@ -1,0 +1,27 @@
+/* Auto-hide scrollbar styles */
+.autoHideScrollbar {
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+.autoHideScrollbar::-webkit-scrollbar {
+  display: none; /* WebKit */
+}
+
+.autoHideScrollbar:hover::-webkit-scrollbar {
+  display: block;
+  width: 6px;
+}
+
+.autoHideScrollbar:hover::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.autoHideScrollbar:hover::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+  transition: background-color 0.3s ease;
+}
+
+.autoHideScrollbar:hover::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.4);
+}
