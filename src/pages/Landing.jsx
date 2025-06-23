@@ -697,7 +697,7 @@ export default function Landing() {
           <Group justify="space-between" align="center">
             <LogoSvg />
             <Text c="gray.5" size="sm">
-              © 2024 AppointMed. All rights reserved.
+              © 2025 AppointMed. All rights reserved.
             </Text>
           </Group>
         </Container>

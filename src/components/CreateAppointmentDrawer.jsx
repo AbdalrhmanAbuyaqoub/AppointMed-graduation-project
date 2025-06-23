@@ -93,7 +93,10 @@ function CreateAppointmentDrawer({ opened, onClose }) {
       // Try to get more detailed error message from server response
       let errorMessage = "Failed to create appointment";
 
-      if (error.response?.data?.message) {
+      // Check for the actual error message in the 'error' field first (common for create-with-patient endpoint)
+      if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error.response?.data?.message) {
         errorMessage = error.response.data.message;
 
         // If it's about user creation failure, check for specific errors

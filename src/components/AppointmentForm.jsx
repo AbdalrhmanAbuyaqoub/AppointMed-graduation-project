@@ -16,11 +16,20 @@ import {
 import { DateTimePicker } from "@mantine/dates";
 import { useClinicQueries } from "../hooks/useClinicQueries";
 import { useUserQueries } from "../hooks/useUserQueries";
+import { useAllDoctorsWorkingHours } from "../hooks/useWorkingHoursQueries";
 import { useEffect, useState } from "react";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 function AppointmentForm({ onSubmit, isLoading, initialValues = null }) {
   const { doctors } = useClinicQueries();
   const { patients, isLoading: isLoadingPatients } = useUserQueries();
+  const { doctorsWorkingDays, isLoading: isLoadingWorkingHours } =
+    useAllDoctorsWorkingHours();
   const [patientType, setPatientType] = useState("new"); // "new" or "existing"
 
   const form = useForm({
@@ -96,6 +105,25 @@ function AppointmentForm({ onSubmit, isLoading, initialValues = null }) {
       });
     }
   }, [patientType]);
+
+  // Helper function to check if a date should be excluded for the selected doctor
+  const isDateExcluded = (date) => {
+    if (!form.values.doctorId || !doctorsWorkingDays) return false;
+
+    const selectedDoctorId = parseInt(form.values.doctorId);
+    const doctorWorkingDays = doctorsWorkingDays[selectedDoctorId] || [];
+
+    // If working days is empty, doctor is available all days
+    if (doctorWorkingDays.length === 0) {
+      return false;
+    }
+
+    // Get the day of week for the date (0=Sunday, 1=Monday, etc.)
+    const dayOfWeek = dayjs(date).day();
+
+    // Exclude the date if the doctor doesn't work on this day
+    return !doctorWorkingDays.includes(dayOfWeek);
+  };
 
   const convertToUTC = (date) => {
     if (!date) return null;
@@ -253,6 +281,7 @@ function AppointmentForm({ onSubmit, isLoading, initialValues = null }) {
 
         <Group grow>
           <DateTimePicker
+            firstDayOfWeek={0}
             radius="md"
             timePickerProps={{
               withDropdown: true,
@@ -266,10 +295,13 @@ function AppointmentForm({ onSubmit, isLoading, initialValues = null }) {
             clearable
             valueFormat="DD MMM YYYY hh:mm A"
             minDate={new Date()}
+            excludeDate={isDateExcluded}
+            weekendDays={[5]}
             {...form.getInputProps("startTime")}
           />
 
           <DateTimePicker
+            firstDayOfWeek={0}
             radius="md"
             timePickerProps={{
               withDropdown: true,
@@ -282,6 +314,8 @@ function AppointmentForm({ onSubmit, isLoading, initialValues = null }) {
             clearable
             valueFormat="DD MMM YYYY hh:mm A"
             minDate={form.values.startTime || new Date()}
+            excludeDate={isDateExcluded}
+            weekendDays={[]}
             {...form.getInputProps("endTime")}
           />
         </Group>

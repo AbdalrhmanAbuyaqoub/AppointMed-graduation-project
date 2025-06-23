@@ -110,6 +110,9 @@ const convertToTableFormat = (apiData) => {
           workingDays.push(dayData.dayOfWeek);
         }
       });
+    } else {
+      // If no working hours are set, doctor is available all days (0-6)
+      workingDays.push(0, 1, 2, 3, 4, 5, 6);
     }
 
     doctorsWorkingDays[doctorId] = workingDays;

@@ -23,10 +23,14 @@ import { theme } from "../theme";
 
 // Working Days Component
 function WorkingDaysDisplay({ doctorId, workingDays }) {
+  // If working days is empty, doctor is available all days
+  const displayWorkingDays =
+    workingDays.length === 0 ? [0, 1, 2, 3, 4, 5, 6] : workingDays;
+
   return (
     <Group gap="8">
       {DAYS_CONFIG.map((dayConfig) => {
-        const isAvailable = workingDays.includes(dayConfig.value);
+        const isAvailable = displayWorkingDays.includes(dayConfig.value);
         return (
           <Box
             bg={isAvailable ? "violet" : "gray.4"}

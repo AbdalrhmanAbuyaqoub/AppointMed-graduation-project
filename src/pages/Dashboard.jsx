@@ -60,6 +60,12 @@ const getDoctorsAvailableToday = (doctors, doctorsWorkingDays) => {
   // Filter doctors who are working today
   return doctors.filter((doctor) => {
     const workingDays = doctorsWorkingDays[doctor.id] || [];
+
+    // If working days is empty, doctor is available all days
+    if (workingDays.length === 0) {
+      return true;
+    }
+
     return workingDays.includes(todayDayNumber);
   });
 };

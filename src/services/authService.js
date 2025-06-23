@@ -15,6 +15,7 @@ const ENDPOINTS = {
   LOGIN: "/Users/login",
   REGISTER: "/Users/register",
   LOGOUT: "/Users/logout",
+  FORGOT_PASSWORD: "/Users/Forgot Your Password",
 };
 
 // Store user data in memory (cleared on page refresh)
@@ -29,6 +30,8 @@ const ERROR_MESSAGES = {
   EMAIL_EXISTS: "Email already exists",
   USER_NOT_FOUND: "User not found",
   WEAK_PASSWORD: "Password is too weak",
+  FORGOT_PASSWORD_SUCCESS:
+    "A new password has been sent to your email address.",
 };
 
 // Create axios instance with default config
@@ -42,8 +45,12 @@ const authApi = axios.create({
 // Request Interceptor
 authApi.interceptors.request.use(
   (config) => {
-    // Skip token for login and register
-    if ([ENDPOINTS.LOGIN, ENDPOINTS.REGISTER].includes(config.url)) {
+    // Skip token for login, register, and forgot password
+    if (
+      [ENDPOINTS.LOGIN, ENDPOINTS.REGISTER, ENDPOINTS.FORGOT_PASSWORD].includes(
+        config.url
+      )
+    ) {
       return config;
     }
 
@@ -265,5 +272,44 @@ export const authService = {
    */
   async validateSession() {
     return hasValidToken();
+  },
+
+  /**
+   * Sends forgot password request to server
+   * Server will send an email with a new password to the user
+   * @param {string} email - User's email address
+   * @returns {Promise<{success: boolean, message?: string, error?: string}>}
+   */
+  async forgotPassword(email) {
+    try {
+      console.log("Attempting forgot password for:", email);
+
+      const forgotPasswordData = {
+        email: email,
+      };
+
+      const response = await authApi.post(
+        ENDPOINTS.FORGOT_PASSWORD,
+        forgotPasswordData
+      );
+      console.log("Forgot password response:", response.data);
+
+      return {
+        success: true,
+        message: ERROR_MESSAGES.FORGOT_PASSWORD_SUCCESS,
+      };
+    } catch (error) {
+      console.error("Forgot password error details:", error.response || error);
+
+      if (error.response?.status === 404) {
+        return { success: false, error: ERROR_MESSAGES.USER_NOT_FOUND };
+      }
+
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        ERROR_MESSAGES.SERVER_ERROR;
+      return { success: false, error: errorMessage };
+    }
   },
 };

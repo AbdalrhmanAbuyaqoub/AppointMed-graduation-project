@@ -10,24 +10,29 @@ import {
   TextInput,
   LoadingOverlay,
   Space,
+  Checkbox,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import React from "react";
+import React, { useState } from "react";
 import LogoSvg from "../assets/logo.svg?react";
 import useStore from "../store/useStore";
 import { useAuthentication } from "../hooks/useAuthentication";
 import { useNavigate } from "react-router-dom";
 import { theme } from "../theme";
 import BaseLogoSvg from "../assets/baseLogo.svg?react";
+import ForgotPassword from "../components/ForgotPassword";
+
 const Login = () => {
   const navigate = useNavigate();
   const isLoading = useStore((state) => state.isLoading);
   const { handleLogin } = useAuthentication();
+  const [mode, setMode] = useState("login"); // "login" or "forgot-password"
 
   const form = useForm({
     initialValues: {
       email: "",
       password: "",
+      rememberMe: false,
     },
 
     validate: {
@@ -48,7 +53,7 @@ const Login = () => {
       const result = await handleLogin({
         email: values.email,
         password: values.password,
-        rememberMe: false,
+        rememberMe: values.rememberMe,
       });
 
       if (!result?.success) {
@@ -57,6 +62,14 @@ const Login = () => {
     } catch (error) {
       console.error("Login error:", error);
     }
+  };
+
+  const switchToForgotPassword = () => {
+    setMode("forgot-password");
+  };
+
+  const switchToLogin = () => {
+    setMode("login");
   };
 
   return (
@@ -103,65 +116,96 @@ const Login = () => {
           />
         </Group>
         <Text size="xl" ta="center" mb="xl" fw={500}>
-          Login to your account
+          {mode === "login" ? "Login to your account" : "Reset Your Password"}
         </Text>
 
-        <form onSubmit={form.onSubmit(handleSubmit)}>
-          <Stack gap="md">
-            <TextInput
-              required
-              label="Email"
-              placeholder="your@email.com"
-              value={form.values.email}
-              onChange={(event) =>
-                form.setFieldValue("email", event.currentTarget.value)
-              }
-              error={form.errors.email}
-              radius="md"
-              disabled={isLoading}
-              size="md"
-            />
-
-            <PasswordInput
-              required
-              label="Password"
-              placeholder="Your password"
-              value={form.values.password}
-              onChange={(event) =>
-                form.setFieldValue("password", event.currentTarget.value)
-              }
-              error={form.errors.password}
-              radius="md"
-              disabled={isLoading}
-              size="md"
-            />
-
-            <Button
-              type="submit"
-              radius="xl"
-              fullWidth
-              loading={isLoading}
-              size="lg"
-              mt="md"
-            >
-              Sign in
-            </Button>
-
-            <Text ta="center" size="sm" mt="md">
-              Don't have an account?{" "}
-              <Anchor
-                component="button"
-                type="button"
-                onClick={() => navigate("/register")}
-                fw={500}
+        {mode === "login" ? (
+          <form onSubmit={form.onSubmit(handleSubmit)}>
+            <Stack gap="md">
+              <TextInput
+                required
+                label="Email"
+                placeholder="your@email.com"
+                value={form.values.email}
+                onChange={(event) =>
+                  form.setFieldValue("email", event.currentTarget.value)
+                }
+                error={form.errors.email}
+                radius="md"
                 disabled={isLoading}
+                size="md"
+              />
+
+              <PasswordInput
+                required
+                label="Password"
+                placeholder="Your password"
+                value={form.values.password}
+                onChange={(event) =>
+                  form.setFieldValue("password", event.currentTarget.value)
+                }
+                error={form.errors.password}
+                radius="md"
+                disabled={isLoading}
+                size="md"
+              />
+
+              <Checkbox
+                label="Remember me"
+                checked={form.values.rememberMe}
+                onChange={(event) =>
+                  form.setFieldValue("rememberMe", event.currentTarget.checked)
+                }
+                disabled={isLoading}
+                size="sm"
+              />
+
+              <Group justify="flex-end">
+                <Anchor
+                  component="button"
+                  type="button"
+                  onClick={switchToForgotPassword}
+                  size="sm"
+                  disabled={isLoading}
+                >
+                  Forgot Password?
+                </Anchor>
+              </Group>
+
+              <Button
+                type="submit"
+                radius="xl"
+                fullWidth
+                loading={isLoading}
+                size="lg"
+                mt="md"
               >
-                Sign up
-              </Anchor>
-            </Text>
-          </Stack>
-        </form>
+                Sign in
+              </Button>
+
+              <Text ta="center" size="sm" mt="md">
+                Don't have an account?{" "}
+                <Anchor
+                  component="button"
+                  type="button"
+                  onClick={() => navigate("/register")}
+                  fw={500}
+                  disabled={isLoading}
+                >
+                  Sign up
+                </Anchor>
+              </Text>
+            </Stack>
+          </form>
+        ) : (
+          <ForgotPassword onBackToLogin={switchToLogin} />
+        )}
       </Paper>
+
+      {/* <ForgotPasswordModal
+        opened={forgotPasswordOpened}
+        onClose={() => setForgotPasswordOpened(false)}
+      /> */}
     </Container>
     // </Container>
   );

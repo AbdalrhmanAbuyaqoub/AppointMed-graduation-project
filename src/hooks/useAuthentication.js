@@ -40,6 +40,7 @@ export function useAuthentication() {
   // Get actions from store
   const loginAction = useAuthStore((state) => state.login);
   const registerAction = useAuthStore((state) => state.register);
+  const forgotPasswordAction = useAuthStore((state) => state.forgotPassword);
   const logoutAction = useAuthStore((state) => state.logout);
 
   // Handle user login
@@ -96,6 +97,25 @@ export function useAuthentication() {
     [registerAction, navigate]
   );
 
+  // Handle forgot password
+  const handleForgotPassword = useCallback(
+    async (email) => {
+      try {
+        const result = await forgotPasswordAction(email);
+
+        if (!result.success) {
+          throw new Error(result.error || "Forgot password request failed");
+        }
+
+        return { success: true, message: result.message };
+      } catch (error) {
+        console.error("Forgot password error:", error);
+        return { success: false, error: error.message };
+      }
+    },
+    [forgotPasswordAction]
+  );
+
   // Handle user logout
   const handleLogout = useCallback(async () => {
     try {
@@ -119,6 +139,7 @@ export function useAuthentication() {
     error,
     handleLogin,
     handleRegister,
+    handleForgotPassword,
     handleLogout,
   };
 }

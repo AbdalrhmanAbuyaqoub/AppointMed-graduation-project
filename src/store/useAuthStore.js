@@ -152,6 +152,29 @@ const useAuthStore = create(
           }
         },
 
+        // Forgot Password
+        forgotPassword: async (email) => {
+          set({ isLoading: true, error: null });
+
+          try {
+            const response = await authService.forgotPassword(email);
+
+            if (!response.success) {
+              set({ error: response.error, isLoading: false });
+              return { success: false, error: response.error };
+            }
+
+            set({ isLoading: false, error: null });
+            return { success: true, message: response.message };
+          } catch (error) {
+            set({
+              error: error.message,
+              isLoading: false,
+            });
+            return { success: false, error: error.message };
+          }
+        },
+
         // Logout user
         logout: async () => {
           console.log("🚪 Starting logout process");
