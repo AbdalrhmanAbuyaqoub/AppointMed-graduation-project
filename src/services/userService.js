@@ -18,7 +18,7 @@ const api = axios.create({
 // Add auth token to requests
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("access_token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -38,6 +38,44 @@ api.interceptors.request.use(
  */
 
 export const userService = {
+  /**
+   * Send verification code to user's email
+   * @param {string} email - The user's email address
+   * @returns {Promise<any>}
+   */
+  sendVerificationCode: async (email) => {
+    try {
+      const response = await api.post("/Users/send-verification-code", {
+        email: email,
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error sending verification code:", error);
+      throw new Error(
+        error.response?.data?.message || "Failed to send verification code"
+      );
+    }
+  },
+
+  /**
+   * Verify email with code
+   * @param {string} email - The user's email address
+   * @param {string} code - The verification code
+   * @returns {Promise<any>}
+   */
+  verifyCode: async (email, code) => {
+    try {
+      const response = await api.post("/Users/verify-code", {
+        email: email,
+        code: code,
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error verifying code:", error);
+      throw new Error(error.response?.data?.message || "Failed to verify code");
+    }
+  },
+
   /**
    * Get all patients from the API
    * @returns {Promise<Patient[]>}

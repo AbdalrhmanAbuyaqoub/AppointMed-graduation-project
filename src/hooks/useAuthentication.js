@@ -41,6 +41,10 @@ export function useAuthentication() {
   const loginAction = useAuthStore((state) => state.login);
   const registerAction = useAuthStore((state) => state.register);
   const forgotPasswordAction = useAuthStore((state) => state.forgotPassword);
+  const sendVerificationCodeAction = useAuthStore(
+    (state) => state.sendVerificationCode
+  );
+  const verifyCodeAction = useAuthStore((state) => state.verifyCode);
   const logoutAction = useAuthStore((state) => state.logout);
 
   // Handle user login
@@ -74,18 +78,18 @@ export function useAuthentication() {
   const handleRegister = useCallback(
     async (userData) => {
       try {
-        const success = await registerAction(userData);
+        const result = await registerAction(userData);
 
-        if (!success) {
-          throw new Error("Registration failed");
+        if (!result.success) {
+          throw new Error(result.error || "Registration failed");
         }
 
-        // Get current user after successful registration and auto-login
-        const currentUser = useAuthStore.getState().user;
+        const currentUser = result.user;
         if (!currentUser?.role) {
-          throw new Error("Invalid user data after registration");
+          throw new Error("Invalid user data received after registration");
         }
 
+        // Since verification happened before registration, user can access the app
         const redirectPath = getDefaultRoute(currentUser.role);
         navigate(redirectPath);
 
@@ -132,6 +136,44 @@ export function useAuthentication() {
     }
   }, [logoutAction, navigate]);
 
+  // Handle send verification code
+  const handleSendVerificationCode = useCallback(
+    async (email) => {
+      try {
+        const result = await sendVerificationCodeAction(email);
+
+        if (!result.success) {
+          throw new Error(result.error || "Failed to send verification code");
+        }
+
+        return { success: true, message: result.message };
+      } catch (error) {
+        console.error("Send verification code error:", error);
+        return { success: false, error: error.message };
+      }
+    },
+    [sendVerificationCodeAction]
+  );
+
+  // Handle verify code
+  const handleVerifyCode = useCallback(
+    async (email, code) => {
+      try {
+        const result = await verifyCodeAction(email, code);
+
+        if (!result.success) {
+          throw new Error(result.error || "Verification failed");
+        }
+
+        return { success: true, message: result.message };
+      } catch (error) {
+        console.error("Verify code error:", error);
+        return { success: false, error: error.message };
+      }
+    },
+    [verifyCodeAction]
+  );
+
   return {
     user,
     isAuthenticated,
@@ -140,6 +182,8 @@ export function useAuthentication() {
     handleLogin,
     handleRegister,
     handleForgotPassword,
+    handleSendVerificationCode,
+    handleVerifyCode,
     handleLogout,
   };
 }

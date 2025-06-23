@@ -1,33 +1,55 @@
 // Token Management Constants
 const TOKEN_KEYS = {
   ACCESS_TOKEN: "access_token",
+  REMEMBER_ME: "remember_me",
 };
 
 /**
  * Service for managing JWT tokens including storage, retrieval, and validation
+ * Supports both persistent (localStorage) and session-only (sessionStorage) storage
  */
 
 /**
- * Store token in localStorage
+ * Store token with appropriate storage strategy
  * @param {string} token - JWT token to store
+ * @param {boolean} rememberMe - Whether to use persistent storage
  */
-export const setToken = (token) => {
-  localStorage.setItem(TOKEN_KEYS.ACCESS_TOKEN, token);
+export const setToken = (token, rememberMe = false) => {
+  if (rememberMe) {
+    // Persistent storage - survives browser restart
+    localStorage.setItem(TOKEN_KEYS.ACCESS_TOKEN, token);
+    localStorage.setItem(TOKEN_KEYS.REMEMBER_ME, "true");
+  } else {
+    // Session storage - cleared when browser closes
+    sessionStorage.setItem(TOKEN_KEYS.ACCESS_TOKEN, token);
+    // Clear any existing persistent storage
+    localStorage.removeItem(TOKEN_KEYS.ACCESS_TOKEN);
+    localStorage.removeItem(TOKEN_KEYS.REMEMBER_ME);
+  }
 };
 
 /**
- * Remove token from localStorage
+ * Remove token from both storage types
  */
 export const clearToken = () => {
   localStorage.removeItem(TOKEN_KEYS.ACCESS_TOKEN);
+  localStorage.removeItem(TOKEN_KEYS.REMEMBER_ME);
+  sessionStorage.removeItem(TOKEN_KEYS.ACCESS_TOKEN);
 };
 
 /**
- * Retrieve token from localStorage
+ * Retrieve token from storage (checks both localStorage and sessionStorage)
  * @returns {string|null} The stored token or null if not found
  */
 export const getToken = () => {
-  return localStorage.getItem(TOKEN_KEYS.ACCESS_TOKEN);
+  // First check localStorage (persistent)
+  const persistentToken = localStorage.getItem(TOKEN_KEYS.ACCESS_TOKEN);
+  if (persistentToken) {
+    return persistentToken;
+  }
+
+  // Then check sessionStorage (temporary)
+  return sessionStorage.getItem(TOKEN_KEYS.ACCESS_TOKEN);
 };
 
 /**
@@ -62,4 +84,12 @@ export const hasValidToken = () => {
 export const getAuthHeader = () => {
   const token = getToken();
   return token ? `Bearer ${token}` : null;
+};
+
+/**
+ * Check if the current session was created with "Remember Me"
+ * @returns {boolean}
+ */
+export const isRememberedSession = () => {
+  return localStorage.getItem(TOKEN_KEYS.REMEMBER_ME) === "true";
 };

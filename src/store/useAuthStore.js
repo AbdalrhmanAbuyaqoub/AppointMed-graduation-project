@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
 import { authService } from "../services/authService";
+import { isRememberedSession } from "../services/tokenService";
 
 // Initial state
 const initialState = {
@@ -123,10 +124,10 @@ const useAuthStore = create(
 
             if (!response.success) {
               set({ error: response.error, isLoading: false });
-              return false;
+              return { success: false, error: response.error };
             }
 
-            // After successful registration, proceed with login
+            // After successful registration, automatically login
             const loginResult = await get().login({
               email: userData.email,
               password: userData.password,
@@ -138,17 +139,17 @@ const useAuthStore = create(
                   "Registration successful but login failed. Please try logging in.",
                 isLoading: false,
               });
-              return false;
+              return { success: false, error: loginResult.error };
             }
 
-            return true;
+            return { success: true, user: loginResult.user };
           } catch (error) {
             set({
               error: error.message,
               isLoading: false,
               sessionChecked: true,
             });
-            return false;
+            return { success: false, error: error.message };
           }
         },
 
@@ -158,6 +159,52 @@ const useAuthStore = create(
 
           try {
             const response = await authService.forgotPassword(email);
+
+            if (!response.success) {
+              set({ error: response.error, isLoading: false });
+              return { success: false, error: response.error };
+            }
+
+            set({ isLoading: false, error: null });
+            return { success: true, message: response.message };
+          } catch (error) {
+            set({
+              error: error.message,
+              isLoading: false,
+            });
+            return { success: false, error: error.message };
+          }
+        },
+
+        // Send verification code
+        sendVerificationCode: async (email) => {
+          set({ isLoading: true, error: null });
+
+          try {
+            const response = await authService.sendVerificationCode(email);
+
+            if (!response.success) {
+              set({ error: response.error, isLoading: false });
+              return { success: false, error: response.error };
+            }
+
+            set({ isLoading: false, error: null });
+            return { success: true, message: response.message };
+          } catch (error) {
+            set({
+              error: error.message,
+              isLoading: false,
+            });
+            return { success: false, error: error.message };
+          }
+        },
+
+        // Verify code
+        verifyCode: async (email, code) => {
+          set({ isLoading: true, error: null });
+
+          try {
+            const response = await authService.verifyCode(email, code);
 
             if (!response.success) {
               set({ error: response.error, isLoading: false });
@@ -228,6 +275,27 @@ const useAuthStore = create(
       }),
       {
         name: "auth-store",
+        storage: {
+          getItem: (name) => {
+            // Only persist user data if it's a remembered session
+            if (isRememberedSession()) {
+              return localStorage.getItem(name);
+            }
+            return sessionStorage.getItem(name);
+          },
+          setItem: (name, value) => {
+            // Check if current session should be persistent
+            if (isRememberedSession()) {
+              localStorage.setItem(name, value);
+            } else {
+              sessionStorage.setItem(name, value);
+            }
+          },
+          removeItem: (name) => {
+            localStorage.removeItem(name);
+            sessionStorage.removeItem(name);
+          },
+        },
         partialize: (state) => ({
           user: state.user,
           isAuthenticated: state.isAuthenticated,

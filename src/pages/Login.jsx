@@ -11,22 +11,26 @@ import {
   LoadingOverlay,
   Space,
   Checkbox,
+  Alert,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { IconCheck } from "@tabler/icons-react";
 import LogoSvg from "../assets/logo.svg?react";
 import useStore from "../store/useStore";
 import { useAuthentication } from "../hooks/useAuthentication";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { theme } from "../theme";
 import BaseLogoSvg from "../assets/baseLogo.svg?react";
 import ForgotPassword from "../components/ForgotPassword";
 
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const isLoading = useStore((state) => state.isLoading);
   const { handleLogin } = useAuthentication();
   const [mode, setMode] = useState("login"); // "login" or "forgot-password"
+  const [successMessage, setSuccessMessage] = useState("");
 
   const form = useForm({
     initialValues: {
@@ -47,6 +51,19 @@ const Login = () => {
       },
     },
   });
+
+  useEffect(() => {
+    // Handle success messages from verification or other flows
+    if (location.state?.message) {
+      setSuccessMessage(location.state.message);
+      // Pre-fill email if provided
+      if (location.state.email) {
+        form.setFieldValue("email", location.state.email);
+      }
+      // Clear the state to prevent showing message on page refresh
+      navigate(location.pathname, { replace: true });
+    }
+  }, [location.state, navigate, form]);
 
   const handleSubmit = async (values) => {
     try {
@@ -118,6 +135,20 @@ const Login = () => {
         <Text size="xl" ta="center" mb="xl" fw={500}>
           {mode === "login" ? "Login to your account" : "Reset Your Password"}
         </Text>
+
+        {successMessage && (
+          <Alert
+            icon={<IconCheck size={16} />}
+            title="Success"
+            color="green"
+            variant="light"
+            mb="md"
+            withCloseButton
+            onClose={() => setSuccessMessage("")}
+          >
+            {successMessage}
+          </Alert>
+        )}
 
         {mode === "login" ? (
           <form onSubmit={form.onSubmit(handleSubmit)}>

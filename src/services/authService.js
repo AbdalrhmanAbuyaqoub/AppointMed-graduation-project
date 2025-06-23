@@ -16,6 +16,8 @@ const ENDPOINTS = {
   REGISTER: "/Users/register",
   LOGOUT: "/Users/logout",
   FORGOT_PASSWORD: "/Users/Forgot Your Password",
+  SEND_VERIFICATION_CODE: "/Users/send-verification-code",
+  VERIFY_CODE: "/Users/verify-code",
 };
 
 // Store user data in memory (cleared on page refresh)
@@ -32,6 +34,10 @@ const ERROR_MESSAGES = {
   WEAK_PASSWORD: "Password is too weak",
   FORGOT_PASSWORD_SUCCESS:
     "A new password has been sent to your email address.",
+  VERIFICATION_CODE_SENT:
+    "We've sent a 6-digit verification code to your email.",
+  VERIFICATION_FAILED: "Invalid or expired verification code.",
+  VERIFICATION_SUCCESS: "Email verified successfully.",
 };
 
 // Create axios instance with default config
@@ -45,11 +51,15 @@ const authApi = axios.create({
 // Request Interceptor
 authApi.interceptors.request.use(
   (config) => {
-    // Skip token for login, register, and forgot password
+    // Skip token for login, register, forgot password, and verification endpoints
     if (
-      [ENDPOINTS.LOGIN, ENDPOINTS.REGISTER, ENDPOINTS.FORGOT_PASSWORD].includes(
-        config.url
-      )
+      [
+        ENDPOINTS.LOGIN,
+        ENDPOINTS.REGISTER,
+        ENDPOINTS.FORGOT_PASSWORD,
+        ENDPOINTS.SEND_VERIFICATION_CODE,
+        ENDPOINTS.VERIFY_CODE,
+      ].includes(config.url)
     ) {
       return config;
     }
@@ -106,26 +116,30 @@ export const authService = {
       const loginData = {
         email: userData.email,
         password: userData.password,
+        rememberMe: userData.rememberMe || false,
       };
 
       const response = await authApi.post(ENDPOINTS.LOGIN, loginData);
       console.log("Login response:", response.data);
 
       const { token, user } = response.data;
+      console.log("User object from API:", user);
 
       if (!token || !user) {
         console.error("Invalid response format:", response.data);
         return { success: false, error: "Invalid response from server" };
       }
 
-      // Store token
-      setToken(token);
+      // Store token with appropriate storage strategy
+      setToken(token, userData.rememberMe || false);
 
       // User object now contains all necessary fields including role
       const normalizedUser = {
         ...user,
         // Ensure lastname is normalized to lastName for consistency
         lastName: user.lastname || user.lastName,
+        // Ensure email is included (API might not return it in the user object)
+        email: user.email || userData.email,
       };
 
       // Remove the old lastname field if it exists
@@ -191,6 +205,8 @@ export const authService = {
         ...result,
         // Ensure lastname is normalized to lastName for consistency
         lastName: result.lastname || result.lastName,
+        // Ensure email is included (API might not return it in the user object)
+        email: result.email || userData.email,
       };
 
       // Remove the old lastname field if it exists
@@ -198,26 +214,12 @@ export const authService = {
         delete normalizedUser.lastname;
       }
 
-      // After successful registration, automatically login
-      const loginResult = await this.login({
-        email: userData.email,
-        password: userData.password,
-      });
-
-      if (!loginResult.success) {
-        console.warn(
-          "Auto-login after registration failed:",
-          loginResult.error
-        );
-        return {
-          success: true,
-          user: normalizedUser,
-          message:
-            "Registration successful but auto-login failed. Please login manually.",
-        };
-      }
-
-      return loginResult;
+      // Return user data without auto-login (verification flow will handle login)
+      return {
+        success: true,
+        user: normalizedUser,
+        message: "Registration successful. Please verify your email.",
+      };
     } catch (error) {
       console.error("Registration error details:", error.response || error);
 
@@ -303,6 +305,101 @@ export const authService = {
 
       if (error.response?.status === 404) {
         return { success: false, error: ERROR_MESSAGES.USER_NOT_FOUND };
+      }
+
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        ERROR_MESSAGES.SERVER_ERROR;
+      return { success: false, error: errorMessage };
+    }
+  },
+
+  /**
+   * Sends verification code to user's email
+   * @param {string} email - User's email address
+   * @returns {Promise<{success: boolean, message?: string, error?: string}>}
+   */
+  async sendVerificationCode(email) {
+    try {
+      console.log("Sending verification code to:", email);
+
+      const verificationData = {
+        email: email,
+      };
+
+      const response = await authApi.post(
+        ENDPOINTS.SEND_VERIFICATION_CODE,
+        verificationData
+      );
+      console.log("Send verification code response:", response.data);
+
+      return {
+        success: true,
+        message: ERROR_MESSAGES.VERIFICATION_CODE_SENT,
+      };
+    } catch (error) {
+      console.error("Send verification code error:", error.response || error);
+
+      if (error.response?.status === 400) {
+        const errorMessage =
+          error.response?.data?.messages ||
+          error.response?.data?.message ||
+          ERROR_MESSAGES.SERVER_ERROR;
+        return { success: false, error: errorMessage };
+      }
+
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        ERROR_MESSAGES.SERVER_ERROR;
+      return { success: false, error: errorMessage };
+    }
+  },
+
+  /**
+   * Verifies the email verification code
+   * @param {string} email - User's email address
+   * @param {string} code - 6-digit verification code
+   * @returns {Promise<{success: boolean, message?: string, error?: string}>}
+   */
+  async verifyCode(email, code) {
+    try {
+      console.log("Verifying code for:", email);
+
+      const verificationData = {
+        email: email,
+        code: code,
+      };
+
+      const response = await authApi.post(
+        ENDPOINTS.VERIFY_CODE,
+        verificationData
+      );
+      console.log("Verify code response:", response.data);
+
+      const { statusCode, isSuccess, messages } = response.data;
+
+      if (!isSuccess) {
+        return {
+          success: false,
+          error: messages || ERROR_MESSAGES.VERIFICATION_FAILED,
+        };
+      }
+
+      return {
+        success: true,
+        message: messages || ERROR_MESSAGES.VERIFICATION_SUCCESS,
+      };
+    } catch (error) {
+      console.error("Verify code error:", error.response || error);
+
+      if (error.response?.status === 400) {
+        const errorMessage =
+          error.response?.data?.messages ||
+          error.response?.data?.message ||
+          ERROR_MESSAGES.VERIFICATION_FAILED;
+        return { success: false, error: errorMessage };
       }
 
       const errorMessage =
