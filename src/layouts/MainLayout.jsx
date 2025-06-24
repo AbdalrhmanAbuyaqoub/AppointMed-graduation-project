@@ -48,7 +48,8 @@ export function MainLayout() {
     {
       label: "Profile",
       icon: <IconUser size={20} />,
-      onClick: () => navigate(ROUTES.PROFILE),
+      onClick: () =>
+        navigate(ROUTES.PROFILE, { state: { background: location } }),
     },
     {
       label: "Settings",

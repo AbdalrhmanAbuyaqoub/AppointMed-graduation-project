@@ -152,13 +152,36 @@ export const userService = {
   },
 
   /**
+   * Get reset token for password reset
+   * @param {string} email - User's email address
+   * @returns {Promise<string>} Reset token
+   */
+  getResetToken: async (email) => {
+    try {
+      console.log("Getting reset token for email:", email);
+      const response = await api.post(
+        "/Users/reset-token",
+        JSON.stringify(email)
+      );
+      console.log("Reset token response:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error getting reset token:", error);
+      console.error("Error response data:", error.response?.data);
+      throw new Error(
+        error.response?.data?.message || "Failed to get reset token"
+      );
+    }
+  },
+
+  /**
    * Reset user password
    * @param {Object} passwordData - Password reset data
    * @param {string} passwordData.email - User's email
    * @param {string} passwordData.oldPassword - Current password
    * @param {string} passwordData.newPassword - New password
    * @param {string} passwordData.confirmNewPassword - Confirm new password
-   * @param {string} passwordData.token - Authentication token
+   * @param {string} passwordData.Token - Reset token from reset-token API
    * @returns {Promise<any>}
    */
   resetPassword: async (passwordData) => {
@@ -170,8 +193,16 @@ export const userService = {
     } catch (error) {
       console.error("Error resetting password:", error);
       console.error("Error response data:", error.response?.data);
+      console.error("Full error response:", error.response);
+      if (error.response?.data?.errors) {
+        console.error("API validation errors:", error.response.data.errors);
+      }
       throw new Error(
-        error.response?.data?.message || "Failed to reset password"
+        error.response?.data?.message ||
+          error.response?.data?.messages ||
+          (error.response?.data?.errors?.length > 0
+            ? error.response.data.errors.join(", ")
+            : "Failed to reset password")
       );
     }
   },

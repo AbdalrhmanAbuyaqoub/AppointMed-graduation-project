@@ -12,6 +12,7 @@ import {
   Center,
   Stack,
   Tooltip,
+  Text,
   AppShell,
   Group,
   Container,
@@ -55,12 +56,17 @@ function NavbarLink({ icon: Icon, label, active, onClick, expanded }) {
         c={active ? theme.primaryColor : "black"}
       >
         <Group
+          gap={"xs"}
           h={"100%"}
           justify={expanded ? "flex-start" : "center"}
           pl={expanded ? 13 : 0}
         >
-          <Icon size={24} stroke={1.9} />
-          {expanded && label}
+          <Icon size={22} stroke={2} />
+          {expanded && (
+            <Text size="sm" fw={500} c={active ? theme.primaryColor : "black"}>
+              {label}
+            </Text>
+          )}
         </Group>
       </Card>
     </Tooltip>

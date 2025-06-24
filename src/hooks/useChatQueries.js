@@ -10,7 +10,7 @@ export function useChatQueries() {
   const timeoutRef = useRef(null);
 
   // Chat timeout duration in milliseconds (5 minutes)
-  const CHAT_TIMEOUT = 1 * 60 * 1000;
+  const CHAT_TIMEOUT = 5 * 60 * 1000;
 
   // Welcome message from chatbot
   const welcomeMessage = {

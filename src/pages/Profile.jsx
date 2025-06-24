@@ -13,8 +13,8 @@ import {
   PasswordInput,
   TextInput,
   Alert,
-  Card,
   Badge,
+  SimpleGrid,
 } from "@mantine/core";
 import {
   IconMail,
@@ -23,6 +23,8 @@ import {
   IconTrash,
   IconLock,
   IconAlertTriangle,
+  IconUser,
+  IconCircleCheck,
 } from "@tabler/icons-react";
 import { useAuthentication } from "../hooks/useAuthentication";
 import { useUserQueries } from "../hooks/useUserQueries";
@@ -49,10 +51,10 @@ const decodeToken = (token) => {
   }
 };
 
-function Profile() {
+function Profile({ isModal = false, onClose }) {
   const { user, handleLogout } = useAuthentication();
   const {
-    resetPassword,
+    resetPasswordWithToken,
     deleteAccount,
     isResettingPassword,
     isDeletingAccount,
@@ -141,9 +143,8 @@ function Profile() {
       return;
     }
 
-    // Debug logs
+    // Get user email
     const userEmail = getUserEmail();
-    const token = getToken();
 
     // Validate user data
     if (!userEmail) {
@@ -156,44 +157,25 @@ function Profile() {
       return;
     }
 
-    if (!token) {
-      notifications.show({
-        title: "Error",
-        message:
-          "Authentication token is missing. Please try logging out and logging back in.",
-        color: "red",
-      });
-      return;
-    }
-
     try {
       const passwordData = {
         email: userEmail,
         oldPassword: passwordForm.oldPassword,
         newPassword: passwordForm.newPassword,
         confirmNewPassword: passwordForm.confirmNewPassword,
-        token: token,
       };
 
       console.log("Password reset data being sent:", passwordData);
-      await resetPassword(passwordData);
+      await resetPasswordWithToken(passwordData);
       setIsPasswordModalOpen(false);
       setPasswordForm({
         oldPassword: "",
         newPassword: "",
         confirmNewPassword: "",
       });
-      notifications.show({
-        title: "Success",
-        message: "Password reset successfully",
-        color: "green",
-      });
     } catch (error) {
-      notifications.show({
-        title: "Error",
-        message: error.message || "Failed to reset password",
-        color: "red",
-      });
+      // Error notification is already handled in resetPasswordWithToken
+      console.error("Password reset failed:", error);
     }
   };
 
@@ -238,6 +220,11 @@ function Profile() {
 
       setIsDeleteModalOpen(false);
 
+      // Close modal if it's open
+      if (isModal && onClose) {
+        onClose();
+      }
+
       // Logout the user after successful deletion
       setTimeout(async () => {
         try {
@@ -272,65 +259,86 @@ function Profile() {
   return (
     <Container size="lg" py="xl">
       <Stack gap="xl">
-        {/* Header */}
-        <Group justify="space-between" align="center">
-          <Title order={1}>Profile Details</Title>
-        </Group>
-
         {/* Profile Information Card */}
-        <Paper radius="md" p="xl" withBorder>
-          <Stack gap="lg">
-            {/* Avatar and Basic Info */}
+        <Paper p="xl" radius="md" withBorder>
+          <Stack gap="xl">
+            {/* Header with Avatar and Name */}
             <Group gap="xl" align="flex-start">
-              <Avatar size={120} radius={120} variant="filled">
+              <Avatar size="xl" radius="xl" variant="filled">
                 {getInitials(user?.firstName, user?.lastName)}
               </Avatar>
 
-              <Stack gap="md" style={{ flex: 1 }}>
-                <Group justify="space-between" align="flex-start">
-                  <Stack gap="xs">
-                    <Title order={2}>
-                      {getFullName(user?.firstName, user?.lastName)}
-                    </Title>
-                    <Badge size="lg" variant="light" color="blue">
-                      {user?.role?.toUpperCase() || "USER"}
-                    </Badge>
-                  </Stack>
-                </Group>
-
-                {/* Contact Information */}
-                <Card withBorder p="md">
-                  <Stack gap="md">
-                    <Group gap="md">
-                      <IconMail size={20} color="var(--mantine-color-gray-6)" />
-                      <Text size="md">
-                        {user?.email || "No email provided"}
-                      </Text>
+              <Stack gap="xs" style={{ flex: 1 }}>
+                <Title order={2} fz={28}>
+                  {getFullName(
+                    user?.firstName?.charAt(0).toUpperCase() +
+                      user?.firstName?.slice(1),
+                    user?.lastName?.charAt(0).toUpperCase() +
+                      user?.lastName?.slice(1)
+                  )}
+                </Title>
+                <Group gap="md">
+                  <Badge size="lg" variant="filled" color="blue">
+                    {user?.role?.toUpperCase() || "USER"}
+                  </Badge>
+                  <Badge size="lg" variant="light" color="green">
+                    <Group gap="xs">
+                      <IconCircleCheck size={16} />
+                      <Text>Active Account</Text>
                     </Group>
-
-                    {user?.phoneNumber && (
-                      <Group gap="md">
-                        <IconPhone
-                          size={20}
-                          color="var(--mantine-color-gray-6)"
-                        />
-                        <Text size="md">{user.phoneNumber}</Text>
-                      </Group>
-                    )}
-
-                    {user?.address && (
-                      <Group gap="md">
-                        <IconMapPin
-                          size={20}
-                          color="var(--mantine-color-gray-6)"
-                        />
-                        <Text size="md">{user.address}</Text>
-                      </Group>
-                    )}
-                  </Stack>
-                </Card>
+                  </Badge>
+                </Group>
               </Stack>
             </Group>
+
+            <Divider />
+
+            {/* User Details Grid */}
+            <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="xl">
+              {/* Basic Information */}
+              <Stack gap="md">
+                <Title order={3} size="h4">
+                  Basic Information
+                </Title>
+                <Group gap="md">
+                  <IconUser size={20} color="var(--mantine-color-gray-6)" />
+                  <Text size="sm" fw={500}>
+                    Full Name:
+                  </Text>
+                  <Text size="sm">
+                    {getFullName(user?.firstName, user?.lastName)}
+                  </Text>
+                </Group>
+                <Group gap="md">
+                  <IconMail size={20} color="var(--mantine-color-gray-6)" />
+                  <Text size="sm" fw={500}>
+                    Email:
+                  </Text>
+                  <Text size="sm">{user?.email || "No email provided"}</Text>
+                </Group>
+              </Stack>
+
+              {/* Contact Information */}
+              <Stack gap="md">
+                <Title order={3} size="h4">
+                  Contact Information
+                </Title>
+                <Group gap="md">
+                  <IconPhone size={20} color="var(--mantine-color-gray-6)" />
+                  <Text size="sm" fw={500}>
+                    Phone:
+                  </Text>
+                  <Text size="sm">{user?.phoneNumber || "Not provided"}</Text>
+                </Group>
+                <Group gap="md">
+                  <IconMapPin size={20} color="var(--mantine-color-gray-6)" />
+                  <Text size="sm" fw={500}>
+                    Address:
+                  </Text>
+                  <Text size="sm">{user?.address || "Not provided"}</Text>
+                </Group>
+              </Stack>
+            </SimpleGrid>
 
             <Divider />
 
@@ -340,6 +348,7 @@ function Profile() {
                 leftSection={<IconLock size={16} />}
                 onClick={() => setIsPasswordModalOpen(true)}
                 variant="outline"
+                radius="md"
                 color="blue"
               >
                 Reset Password
@@ -350,123 +359,133 @@ function Profile() {
                 onClick={() => setIsDeleteModalOpen(true)}
                 variant="outline"
                 color="red"
+                radius="md"
               >
                 Delete Account
               </Button>
             </Group>
           </Stack>
         </Paper>
-      </Stack>
 
-      {/* Reset Password Modal */}
-      <Modal
-        opened={isPasswordModalOpen}
-        onClose={() => setIsPasswordModalOpen(false)}
-        title="Reset Password"
-        size="md"
-      >
-        <form onSubmit={handlePasswordReset}>
+        {/* Reset Password Modal */}
+        <Modal
+          opened={isPasswordModalOpen}
+          onClose={() => setIsPasswordModalOpen(false)}
+          title={<Text fw={600}>Reset Password</Text>}
+          size="md"
+        >
+          <form onSubmit={handlePasswordReset}>
+            <Stack gap="md">
+              <PasswordInput
+                radius="md"
+                label="Current Password"
+                placeholder="Enter current password"
+                value={passwordForm.oldPassword}
+                onChange={(e) =>
+                  setPasswordForm({
+                    ...passwordForm,
+                    oldPassword: e.target.value,
+                  })
+                }
+                required
+              />
+
+              <PasswordInput
+                radius="md"
+                label="New Password"
+                placeholder="Enter new password"
+                value={passwordForm.newPassword}
+                onChange={(e) =>
+                  setPasswordForm({
+                    ...passwordForm,
+                    newPassword: e.target.value,
+                  })
+                }
+                required
+              />
+
+              <PasswordInput
+                radius="md"
+                label="Confirm New Password"
+                placeholder="Confirm new password"
+                value={passwordForm.confirmNewPassword}
+                onChange={(e) =>
+                  setPasswordForm({
+                    ...passwordForm,
+                    confirmNewPassword: e.target.value,
+                  })
+                }
+                required
+              />
+
+              <Group justify="flex-end" gap="md">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsPasswordModalOpen(false)}
+                  radius="md"
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" loading={isResettingPassword} radius="md">
+                  Reset Password
+                </Button>
+              </Group>
+            </Stack>
+          </form>
+        </Modal>
+
+        {/* Delete Account Modal */}
+        <Modal
+          opened={isDeleteModalOpen}
+          onClose={() => setIsDeleteModalOpen(false)}
+          title="Delete Account"
+          size="md"
+          radius="md"
+        >
           <Stack gap="md">
-            <PasswordInput
-              label="Current Password"
-              placeholder="Enter current password"
-              value={passwordForm.oldPassword}
-              onChange={(e) =>
-                setPasswordForm({
-                  ...passwordForm,
-                  oldPassword: e.target.value,
-                })
-              }
-              required
-            />
+            <Alert
+              p="xs"
+              icon={<IconAlertTriangle size={16} />}
+              title="Warning"
+              color="red"
+              variant="light"
+            >
+              This action cannot be undone. All your data will be permanently
+              deleted.
+            </Alert>
 
-            <PasswordInput
-              label="New Password"
-              placeholder="Enter new password"
-              value={passwordForm.newPassword}
-              onChange={(e) =>
-                setPasswordForm({
-                  ...passwordForm,
-                  newPassword: e.target.value,
-                })
-              }
-              required
-            />
+            <Text size="sm" c="dimmed">
+              To confirm deletion, please type <strong>DELETE</strong> in the
+              field below:
+            </Text>
 
-            <PasswordInput
-              label="Confirm New Password"
-              placeholder="Confirm new password"
-              value={passwordForm.confirmNewPassword}
-              onChange={(e) =>
-                setPasswordForm({
-                  ...passwordForm,
-                  confirmNewPassword: e.target.value,
-                })
-              }
-              required
+            <TextInput
+              placeholder="Type DELETE to confirm"
+              value={deleteConfirmation}
+              onChange={(e) => setDeleteConfirmation(e.target.value)}
             />
 
             <Group justify="flex-end" gap="md">
               <Button
-                variant="outline"
-                onClick={() => setIsPasswordModalOpen(false)}
+                variant="filled"
+                radius="md"
+                onClick={() => setIsDeleteModalOpen(false)}
               >
                 Cancel
               </Button>
-              <Button type="submit" loading={isResettingPassword}>
-                Reset Password
+              <Button
+                color="red"
+                radius="md"
+                variant="outline"
+                loading={isDeletingAccount}
+                onClick={handleDeleteAccount}
+              >
+                Delete Account
               </Button>
             </Group>
           </Stack>
-        </form>
-      </Modal>
-
-      {/* Delete Account Modal */}
-      <Modal
-        opened={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        title="Delete Account"
-        size="md"
-      >
-        <Stack gap="md">
-          <Alert
-            icon={<IconAlertTriangle size={16} />}
-            title="Warning"
-            color="red"
-            variant="light"
-          >
-            This action cannot be undone. All your data will be permanently
-            deleted.
-          </Alert>
-
-          <Text size="sm" c="dimmed">
-            To confirm deletion, please type <strong>DELETE</strong> in the
-            field below:
-          </Text>
-
-          <TextInput
-            placeholder="Type DELETE to confirm"
-            value={deleteConfirmation}
-            onChange={(e) => setDeleteConfirmation(e.target.value)}
-          />
-
-          <Group justify="flex-end" gap="md">
-            <Button
-              variant="outline"
-              onClick={() => setIsDeleteModalOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              color="red"
-              loading={isDeletingAccount}
-              onClick={handleDeleteAccount}
-            >
-              Delete Account
-            </Button>
-          </Group>
-        </Stack>
-      </Modal>
+        </Modal>
+      </Stack>
     </Container>
   );
 }

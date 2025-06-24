@@ -10,7 +10,7 @@ import {
   Box,
   LoadingOverlay,
 } from "@mantine/core";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { ProfileMenu } from "../components/ProfileMenu";
 import { MessageBubble } from "../components/MessageBubble";
 import { ChatInput } from "../components/ChatInput";
@@ -23,6 +23,7 @@ import calendarIllustration from "../assets/calendar-illustration.svg";
 function Chat() {
   const viewport = useRef(null);
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, handleLogout } = useAuthentication();
   const [isScrolling, setIsScrolling] = useState(false);
   const { messages, isLoading, sendMessage, clearChat, isClearingChat } =
@@ -45,7 +46,8 @@ function Chat() {
     {
       label: "Profile",
       icon: <IconUser size={20} />,
-      onClick: () => navigate(ROUTES.PROFILE),
+      onClick: () =>
+        navigate(ROUTES.PROFILE, { state: { background: location } }),
     },
     {
       label: "Settings",

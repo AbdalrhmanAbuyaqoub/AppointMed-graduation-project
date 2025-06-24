@@ -1,11 +1,12 @@
 import React, { Suspense } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { MainLayout } from "./layouts/MainLayout";
 import { RouteGuard } from "./routes/RouteGuard";
 import { ROUTES, LazyComponents } from "./routes/index.jsx";
 import PageNotFound from "./pages/PageNotFound";
 import Clinics from "./pages/Clinics";
 import ClinicDetails from "./pages/ClinicDetails";
+import ProfileModal from "./components/ProfileModal";
 
 // Loading fallback component
 const LoadingFallback = () => (
@@ -22,9 +23,12 @@ const LoadingFallback = () => (
 );
 
 export const AppRoutes = () => {
+  const location = useLocation();
+  const background = location.state && location.state.background;
+
   return (
     <Suspense fallback={<LoadingFallback />}>
-      <Routes>
+      <Routes location={background || location}>
         {/* Public routes */}
         <Route
           path={ROUTES.LANDING}
@@ -57,16 +61,6 @@ export const AppRoutes = () => {
           element={
             <RouteGuard requireAuth allowedRoles={["patient"]}>
               <LazyComponents.Chat />
-            </RouteGuard>
-          }
-        />
-
-        {/* Profile route - accessible by all authenticated users */}
-        <Route
-          path={ROUTES.PROFILE}
-          element={
-            <RouteGuard requireAuth allowedRoles={["admin", "patient"]}>
-              <LazyComponents.Profile />
             </RouteGuard>
           }
         />
@@ -111,6 +105,20 @@ export const AppRoutes = () => {
           }
         />
       </Routes>
+
+      {/* Contextual modals */}
+      {background && (
+        <Routes>
+          <Route
+            path={ROUTES.PROFILE}
+            element={
+              <RouteGuard requireAuth>
+                <ProfileModal />
+              </RouteGuard>
+            }
+          />
+        </Routes>
+      )}
     </Suspense>
   );
 };

@@ -95,9 +95,65 @@ export function useUserQueries() {
     },
   });
 
-  // Mutation for resetting password
+  // Mutation for getting reset token
+  const getResetTokenMutation = useMutation({
+    mutationFn: userService.getResetToken,
+    onError: (error) => {
+      notifications.show({
+        title: "Error",
+        message: error.message || "Failed to get reset token",
+        color: "red",
+      });
+    },
+  });
+
+  // Mutation for resetting password (original function)
   const resetPasswordMutation = useMutation({
     mutationFn: userService.resetPassword,
+    onError: (error) => {
+      notifications.show({
+        title: "Error",
+        message: error.message || "Failed to reset password",
+        color: "red",
+      });
+    },
+  });
+
+  // Combined mutation to reset password with token
+  const resetPasswordWithTokenMutation = useMutation({
+    mutationFn: async (passwordData) => {
+      try {
+        // First, get the reset token
+        const resetTokenResponse = await userService.getResetToken(
+          passwordData.email
+        );
+
+        // Extract the reset token from the response
+        const resetToken = resetTokenResponse?.token || resetTokenResponse;
+
+        if (!resetToken) {
+          throw new Error("Failed to get reset token");
+        }
+
+        // Prepare the password reset data with the reset token
+        const resetPasswordData = {
+          email: passwordData.email,
+          oldPassword: passwordData.oldPassword,
+          newPassword: passwordData.newPassword,
+          confirmNewPassword: passwordData.confirmNewPassword,
+          Token: resetToken,
+        };
+
+        // Call the reset password API with the reset token
+        const resetResponse = await userService.resetPassword(
+          resetPasswordData
+        );
+
+        return resetResponse;
+      } catch (error) {
+        throw error;
+      }
+    },
     onSuccess: () => {
       notifications.show({
         title: "Success",
@@ -144,9 +200,12 @@ export function useUserQueries() {
     // Mutations
     banPatient: banPatientMutation.mutate,
     unbanPatient: unbanPatientMutation.mutate,
+    getResetToken: getResetTokenMutation.mutate,
     resetPassword: resetPasswordMutation.mutate,
+    resetPasswordWithToken: resetPasswordWithTokenMutation.mutate,
     deleteAccount: deleteAccountMutation.mutate,
-    isResettingPassword: resetPasswordMutation.isPending,
+    isGettingResetToken: getResetTokenMutation.isPending,
+    isResettingPassword: resetPasswordWithTokenMutation.isPending,
     isDeletingAccount: deleteAccountMutation.isPending,
   };
 }
