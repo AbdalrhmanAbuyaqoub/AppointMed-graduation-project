@@ -5,20 +5,27 @@ import {
   Paper,
   ScrollArea,
   Group,
-  Flex,
-  Image,
   Box,
   LoadingOverlay,
+  Container,
+  Text,
+  Flex,
+  Image,
+  Center,
 } from "@mantine/core";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ProfileMenu } from "../components/ProfileMenu";
 import { MessageBubble } from "../components/MessageBubble";
 import { ChatInput } from "../components/ChatInput";
+import { ChatContainer } from "../components/ChatContainer";
 import { IconSettings, IconUser, IconLogout } from "@tabler/icons-react";
 import { useAuthentication } from "../hooks/useAuthentication";
 import { useChatQueries } from "../hooks/useChatQueries";
 import { ROUTES } from "../routes/index";
-import calendarIllustration from "../assets/calendar-illustration.svg";
+import { useMediaQuery } from "@mantine/hooks";
+import EventsIllustrationSvg from "../assets/Events-rafiki.svg?react";
+import { theme } from "../theme";
+import LogoSvg from "../assets/logo.svg?react";
 
 function Chat() {
   const viewport = useRef(null);
@@ -28,6 +35,8 @@ function Chat() {
   const [isScrolling, setIsScrolling] = useState(false);
   const { messages, isLoading, sendMessage, clearChat, isClearingChat } =
     useChatQueries();
+  const isMobile = useMediaQuery("(max-width: 768px)");
+  const showIllustration = useMediaQuery("(min-width: 1200px)");
 
   // Clear chat when component unmounts (closing chat)
   React.useEffect(() => {
@@ -37,7 +46,6 @@ function Chat() {
   }, []);
 
   const handleLogoutWithClear = async () => {
-    // Clear chat before logging out
     await clearChat();
     handleLogout();
   };
@@ -96,53 +104,75 @@ function Chat() {
     setIsScrolling(!isAtBottom);
   };
 
-  return (
-    <AppShell bg="var(--mantine-color-blue-light)">
-      <Flex h="100vh" gap="md" p="md">
-        {/* Left side illustration */}
-        <Paper w="70%" radius="md" bg="transparent" pos="relative">
-          <Box pos="absolute" top={20} left={30}>
-            <ProfileMenu menuItems={menuItems} user={user} />
-          </Box>
-          <Flex align="center" justify="center" h="100%">
-            <Image
-              src={calendarIllustration}
-              alt="Calendar Illustration"
-              h={600}
-              w="auto"
-            />
-          </Flex>
-        </Paper>
+  function illustrationSection() {
+    return (
+      <Container h="100%">
+        <Center h="100%">
+          <Stack align="center" gap="xs">
+            <EventsIllustrationSvg width={450} height={450} />
 
-        {/* Right side chat */}
-        <Paper
-          w={500}
-          radius="lg"
-          shadow="md"
-          mr={30}
-          bg={"gray.1"}
-          pos="relative"
-        >
-          <LoadingOverlay visible={isClearingChat} />
-          <Flex direction="column" h="100%">
-            <ScrollArea
-              h="calc(100% - 80px)"
-              viewportRef={viewport}
-              offsetScrollbars
-              onScrollPositionChange={handleScroll}
-              scrollbarSize={8}
-              type="hover"
+            <Text size="xl" fw={600} c="var(--mantine-primary-color-7)">
+              Book Your Next Appointment With Us
+            </Text>
+            <Text size="md" c="dimmed" ta="center" maw={300}>
+              Schedule your next visit with our healthcare providers quickly and
+              easily.
+            </Text>
+          </Stack>
+        </Center>
+      </Container>
+    );
+  }
+
+  return (
+    <AppShell header={{ height: 60 }} padding={0} bg={theme.backgroundColor}>
+      <AppShell.Header withBorder={false} bg={theme.backgroundColor}>
+        <Container fluid h="100%" maw={1232}>
+          <Group p={"xs"} justify="space-between" align="center" h="100%">
+            <LogoSvg />
+            <ProfileMenu menuItems={menuItems} user={user} />
+          </Group>
+        </Container>
+      </AppShell.Header>
+      <AppShell.Main>
+        {isMobile ? (
+          <ChatContainer
+            messages={messages}
+            isClearingChat={isClearingChat}
+            viewport={viewport}
+            handleScroll={handleScroll}
+            handleSendMessage={handleSendMessage}
+            isMobile={isMobile}
+          />
+        ) : (
+          <Container h="calc(100vh - 60px)" fluid maw={1232}>
+            <Group
+              h="100%"
+              wrap="nowrap"
+              align="stretch"
+              justify={showIllustration ? "space-between" : "center"}
             >
-              <Stack gap="md" p="md">
-                {messages.map((message) => (
-                  <MessageBubble key={message.id} message={message} />
-                ))}
-              </Stack>
-            </ScrollArea>
-            <ChatInput onSendMessage={handleSendMessage} />
-          </Flex>
-        </Paper>
-      </Flex>
+              {/* Left side - Illustration */}
+              {showIllustration && (
+                <Container w={500} h="100%" py="md">
+                  {illustrationSection()}
+                </Container>
+              )}
+              {/* Right side - Chat Container */}
+              <Container w={showIllustration ? 550 : 600} h="100%" py="md">
+                <ChatContainer
+                  messages={messages}
+                  isClearingChat={isClearingChat}
+                  viewport={viewport}
+                  handleScroll={handleScroll}
+                  handleSendMessage={handleSendMessage}
+                  isMobile={isMobile}
+                />
+              </Container>
+            </Group>
+          </Container>
+        )}
+      </AppShell.Main>
     </AppShell>
   );
 }

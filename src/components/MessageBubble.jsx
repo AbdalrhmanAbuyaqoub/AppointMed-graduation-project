@@ -2,6 +2,7 @@ import React from "react";
 import { Avatar, Text, Group, Paper, Stack, Box } from "@mantine/core";
 import { IconUser, IconRobot } from "@tabler/icons-react";
 import styles from "../styles/Chat.module.css";
+import { useMediaQuery } from "@mantine/hooks";
 
 // Helper to manually parse <b> tags
 function parseBold(text) {
@@ -24,35 +25,38 @@ function parseBold(text) {
 }
 
 export function MessageBubble({ message }) {
+  const isMobile = useMediaQuery("(max-width: 768px)");
+
   return (
     <Group
       justify={message.isUser ? "flex-end" : "flex-start"}
       align="flex-end"
       className={styles.messageGroup}
+      gap={isMobile ? "xs" : "md"}
     >
       {!message.isUser && (
         <Avatar
           variant="filled"
           radius="xl"
-          size="md"
+          size={isMobile ? "sm" : "md"}
           className={styles.botAvatar}
         >
-          <IconRobot size="1.2rem" />
+          <IconRobot size={isMobile ? "1rem" : "1.2rem"} />
         </Avatar>
       )}
       <Stack
-        gap={4}
+        gap={2}
         align={message.isUser ? "flex-end" : "flex-start"}
-        style={{ maxWidth: "70%" }}
+        style={{ maxWidth: isMobile ? "85%" : "70%" }}
       >
         <Box className={styles.messageWrapper}>
           <Paper
             className={message.isUser ? styles.userBubble : styles.botBubble}
             shadow="sm"
-            p="sm"
+            p={isMobile ? "xs" : "sm"}
           >
             <Text
-              size="sm"
+              size={isMobile ? "sm" : "md"}
               style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}
             >
               {parseBold(message.text)}
@@ -69,11 +73,11 @@ export function MessageBubble({ message }) {
       {message.isUser && (
         <Avatar
           variant="filled"
-          size="md"
+          size={isMobile ? "sm" : "md"}
           radius="xl"
           className={styles.userAvatar}
         >
-          <IconUser size="1.2rem" />
+          <IconUser size={isMobile ? "1rem" : "1.2rem"} />
         </Avatar>
       )}
     </Group>
