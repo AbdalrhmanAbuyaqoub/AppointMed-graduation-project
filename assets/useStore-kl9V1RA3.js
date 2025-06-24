@@ -1,4 +1,4 @@
-import{a3 as u,m as i,j as d,d as m,a4 as p,c as h,a5 as v,a6 as y,a7 as A}from"./index-By0p5ZE8.js";var s={root:"m_849cf0da"};const g={underline:"hover"},a=u((r,e)=>{const{underline:n,className:t,unstyled:o,mod:c,...l}=i("Anchor",g,r);return d.jsx(m,{component:"a",ref:e,className:p({[s.root]:!o},t),...l,mod:[{underline:n},c],__staticSelector:"Anchor",unstyled:o})});a.classes=s;a.displayName="@mantine/core/Anchor";/**
+import{a3 as u,m as i,j as d,d as m,a4 as p,c as h,a5 as v,a6 as y,a7 as A}from"./index-BvZYOKgn.js";var s={root:"m_849cf0da"};const g={underline:"hover"},a=u((r,e)=>{const{underline:n,className:t,unstyled:o,mod:c,...l}=i("Anchor",g,r);return d.jsx(m,{component:"a",ref:e,className:p({[s.root]:!o},t),...l,mod:[{underline:n},c],__staticSelector:"Anchor",unstyled:o})});a.classes=s;a.displayName="@mantine/core/Anchor";/**
  * @license @tabler/icons-react v3.31.0 - MIT
  *
  * This source code is licensed under the MIT license.
