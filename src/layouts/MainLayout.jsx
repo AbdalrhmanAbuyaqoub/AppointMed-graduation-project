@@ -1,5 +1,5 @@
 import { AppShell, Container, Group, Burger, TextInput } from "@mantine/core";
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { NavbarMinimal } from "../components/NavbarMinimal";
 import React, { useState, useEffect } from "react";
 import {
@@ -13,9 +13,11 @@ import { ProfileMenu } from "../components/ProfileMenu";
 import { theme } from "../theme";
 import { useViewportSize } from "@mantine/hooks";
 import useSearchStore from "../store/useSearchStore";
+import { ROUTES } from "../routes/index";
 
 export function MainLayout() {
   const { handleLogout, user } = useAuthentication();
+  const navigate = useNavigate();
   const [expanded, setExpanded] = useState(false);
   const [mobileOpened, setMobileOpened] = useState(false);
   const { width } = useViewportSize();
@@ -46,7 +48,7 @@ export function MainLayout() {
     {
       label: "Profile",
       icon: <IconUser size={20} />,
-      onClick: () => {},
+      onClick: () => navigate(ROUTES.PROFILE),
     },
     {
       label: "Settings",

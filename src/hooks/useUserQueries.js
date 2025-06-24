@@ -144,10 +144,8 @@ export function useUserQueries() {
     // Mutations
     banPatient: banPatientMutation.mutate,
     unbanPatient: unbanPatientMutation.mutate,
-    updateProfile: updateProfileMutation.mutate,
     resetPassword: resetPasswordMutation.mutate,
     deleteAccount: deleteAccountMutation.mutate,
-    isUpdatingProfile: updateProfileMutation.isPending,
     isResettingPassword: resetPasswordMutation.isPending,
     isDeletingAccount: deleteAccountMutation.isPending,
   };

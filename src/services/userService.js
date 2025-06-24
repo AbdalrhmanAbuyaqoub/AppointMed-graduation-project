@@ -154,17 +154,22 @@ export const userService = {
   /**
    * Reset user password
    * @param {Object} passwordData - Password reset data
-   * @param {string} passwordData.currentPassword - Current password
+   * @param {string} passwordData.email - User's email
+   * @param {string} passwordData.oldPassword - Current password
    * @param {string} passwordData.newPassword - New password
-   * @param {string} passwordData.confirmPassword - Confirm new password
+   * @param {string} passwordData.confirmNewPassword - Confirm new password
+   * @param {string} passwordData.token - Authentication token
    * @returns {Promise<any>}
    */
   resetPassword: async (passwordData) => {
     try {
-      const response = await api.put("/Users/reset-password", passwordData);
+      console.log("Reset Password Request Body:", passwordData);
+      const response = await api.post("/Users/ResetPassword", passwordData);
+      console.log("Reset Password Response:", response.data);
       return response.data;
     } catch (error) {
       console.error("Error resetting password:", error);
+      console.error("Error response data:", error.response?.data);
       throw new Error(
         error.response?.data?.message || "Failed to reset password"
       );
@@ -179,12 +184,15 @@ export const userService = {
    */
   deleteAccount: async (email, id) => {
     try {
+      console.log("Delete Account Request - Email:", email, "ID:", id);
       const response = await api.delete(
         `/Users/delete-user?email=${email}&id=${id}`
       );
+      console.log("Delete Account Response:", response.data);
       return response.data;
     } catch (error) {
       console.error("Error deleting account:", error);
+      console.error("Error response data:", error.response?.data);
       throw new Error(
         error.response?.data?.message || "Failed to delete account"
       );

@@ -19,6 +19,7 @@ export const ROUTES = {
   DOCTOR_DETAILS: "/doctors/:id",
   PATIENTS: "/patients",
   PATIENT_DETAILS: "/patients/:id",
+  PROFILE: "/profile",
 };
 
 // Lazy-loaded components with better naming
@@ -40,6 +41,7 @@ export const LazyComponents = {
   DoctorDetails: lazy(() => import("../pages/DoctorDetails")),
   Patients: lazy(() => import("../pages/Patients")),
   PatientDetails: lazy(() => import("../pages/PatientDetails")),
+  Profile: lazy(() => import("../pages/Profile")),
 };
 
 // Get default route based on user role

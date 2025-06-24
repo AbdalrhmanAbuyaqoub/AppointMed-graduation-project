@@ -61,6 +61,16 @@ export const AppRoutes = () => {
           }
         />
 
+        {/* Profile route - accessible by all authenticated users */}
+        <Route
+          path={ROUTES.PROFILE}
+          element={
+            <RouteGuard requireAuth allowedRoles={["admin", "patient"]}>
+              <LazyComponents.Profile />
+            </RouteGuard>
+          }
+        />
+
         {/* Admin-only routes */}
         <Route
           element={
