@@ -1,7 +1,8 @@
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import { Modal } from "@mantine/core";
 import { useNavigate } from "react-router-dom";
-import Profile from "../pages/Profile";
+
+const Profile = lazy(() => import("../pages/Profile"));
 
 function ProfileModal() {
   const navigate = useNavigate();
@@ -21,7 +22,9 @@ function ProfileModal() {
         blur: 3,
       }}
     >
-      <Profile isModal={true} onClose={handleClose} />
+      <Suspense fallback={<div>Loading...</div>}>
+        <Profile isModal={true} onClose={handleClose} />
+      </Suspense>
     </Modal>
   );
 }

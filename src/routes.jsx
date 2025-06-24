@@ -4,8 +4,6 @@ import { MainLayout } from "./layouts/MainLayout";
 import { RouteGuard } from "./routes/RouteGuard";
 import { ROUTES, LazyComponents } from "./routes/index.jsx";
 import PageNotFound from "./pages/PageNotFound";
-import Clinics from "./pages/Clinics";
-import ClinicDetails from "./pages/ClinicDetails";
 import ProfileModal from "./components/ProfileModal";
 
 // Loading fallback component
@@ -81,8 +79,11 @@ export const AppRoutes = () => {
             path={ROUTES.APPOINTMENTS}
             element={<LazyComponents.Appointments />}
           />
-          <Route path={ROUTES.CLINICS} element={<Clinics />} />
-          <Route path={ROUTES.CLINIC_DETAILS} element={<ClinicDetails />} />
+          <Route path={ROUTES.CLINICS} element={<LazyComponents.Clinics />} />
+          <Route
+            path={ROUTES.CLINIC_DETAILS}
+            element={<LazyComponents.ClinicDetails />}
+          />
           <Route path={ROUTES.DOCTORS} element={<LazyComponents.Doctors />} />
           <Route
             path={ROUTES.DOCTOR_DETAILS}
