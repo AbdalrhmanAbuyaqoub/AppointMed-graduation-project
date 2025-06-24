@@ -17,6 +17,7 @@ import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { getDefaultRoute, ROUTES } from "../routes/index";
 import useAuthStore from "../store/useAuthStore";
+import { chatService } from "../services/chatService";
 
 // Selector functions for store values
 const selectUser = (state) => state.user;
@@ -60,6 +61,20 @@ export function useAuthentication() {
         const currentUser = result.user;
         if (!currentUser?.role) {
           throw new Error("Invalid user data received after login");
+        }
+
+        // Clear chat history after successful login - only for patients
+        if (currentUser.role.toLowerCase() === "patient") {
+          try {
+            await chatService.clearChat();
+            console.log("[useAuthentication] Chat cleared after patient login");
+          } catch (chatError) {
+            console.warn(
+              "[useAuthentication] Failed to clear chat after patient login:",
+              chatError
+            );
+            // Don't fail the login process if chat clearing fails
+          }
         }
 
         const redirectPath = getDefaultRoute(currentUser.role);

@@ -25,7 +25,21 @@ function Chat() {
   const navigate = useNavigate();
   const { user, handleLogout } = useAuthentication();
   const [isScrolling, setIsScrolling] = useState(false);
-  const { messages, isLoading, sendMessage } = useChatQueries();
+  const { messages, isLoading, sendMessage, clearChat, isClearingChat } =
+    useChatQueries();
+
+  // Clear chat when component unmounts (closing chat)
+  React.useEffect(() => {
+    return () => {
+      clearChat();
+    };
+  }, []);
+
+  const handleLogoutWithClear = async () => {
+    // Clear chat before logging out
+    await clearChat();
+    handleLogout();
+  };
 
   const menuItems = [
     {
@@ -41,7 +55,7 @@ function Chat() {
     {
       label: "Log Out",
       icon: <IconLogout size={20} />,
-      onClick: handleLogout,
+      onClick: handleLogoutWithClear,
     },
   ];
 
@@ -107,6 +121,7 @@ function Chat() {
           bg={"gray.1"}
           pos="relative"
         >
+          <LoadingOverlay visible={isClearingChat} />
           <Flex direction="column" h="100%">
             <ScrollArea
               h="calc(100% - 80px)"

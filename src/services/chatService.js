@@ -75,4 +75,24 @@ export const chatService = {
       throw error;
     }
   },
+
+  /**
+   * Clear chat history for the current user
+   * @returns {Promise<Object>} The response from the clear endpoint
+   */
+  clearChat: async () => {
+    try {
+      const userId = getUserIdFromToken();
+      const requestBody = {
+        user_id: userId || "",
+      };
+      console.log("[chatService] Clearing chat for user:", requestBody);
+      const response = await api.post("/clear", requestBody);
+      console.log("[chatService] Chat cleared:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error clearing chat:", error);
+      throw error;
+    }
+  },
 };
