@@ -51,11 +51,11 @@ export function MainLayout() {
       onClick: () =>
         navigate(ROUTES.PROFILE, { state: { background: location } }),
     },
-    {
-      label: "Settings",
-      icon: <IconSettings size={20} />,
-      onClick: () => {},
-    },
+    // {
+    //   label: "Settings",
+    //   icon: <IconSettings size={20} />,
+    //   onClick: () => {},
+    // },
     {
       label: "Log Out",
       icon: <IconLogout size={20} />,

@@ -20,6 +20,11 @@ export function ChatContainer({
       shadow={isMobile ? "none" : "sm"}
       bg="var(--mantine-color-gray-0)"
       pos="relative"
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
+      }}
     >
       <LoadingOverlay visible={isClearingChat} />
       <ScrollArea
@@ -30,12 +35,9 @@ export function ChatContainer({
         type="hover"
         scrollbars="y"
         style={{
-          height: isMobile ? `calc(100dvh - 110px)` : `calc(100vh - 100px)`,
-          position: isMobile ? "fixed" : "relative",
-          top: isMobile ? "60px" : "auto",
-          left: isMobile ? 0 : "auto",
-          right: isMobile ? 0 : "auto",
-          bottom: isMobile ? "60px" : "auto",
+          flex: 1,
+          height: isMobile ? `calc(100dvh - 120px)` : `calc(100vh - 100px)`,
+          position: "relative",
           backgroundColor: "var(--mantine-color-gray-0)",
         }}
       >
@@ -55,11 +57,10 @@ export function ChatContainer({
       </ScrollArea>
       <Box
         style={{
-          position: isMobile ? "fixed" : "absolute",
+          position: "relative",
           bottom: 0,
           left: 0,
           right: 0,
-          zIndex: 1000,
           height: "60px",
           backgroundColor: "var(--mantine-color-gray-0)",
           borderTop: "1px solid var(--mantine-color-gray-2)",

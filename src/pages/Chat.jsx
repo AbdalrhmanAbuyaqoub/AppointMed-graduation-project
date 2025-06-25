@@ -57,11 +57,11 @@ function Chat() {
       onClick: () =>
         navigate(ROUTES.PROFILE, { state: { background: location } }),
     },
-    {
-      label: "Settings",
-      icon: <IconSettings size={20} />,
-      onClick: () => {},
-    },
+    // {
+    //   label: "Settings",
+    //   icon: <IconSettings size={20} />,
+    //   onClick: () => {},
+    // },
     {
       label: "Log Out",
       icon: <IconLogout size={20} />,
@@ -134,16 +134,23 @@ function Chat() {
           </Group>
         </Container>
       </AppShell.Header>
-      <AppShell.Main>
+      <AppShell.Main
+        style={{
+          height: isMobile ? "calc(100vh - 60px)" : "auto",
+          overflow: isMobile ? "hidden" : "visible",
+        }}
+      >
         {isMobile ? (
-          <ChatContainer
-            messages={messages}
-            isClearingChat={isClearingChat}
-            viewport={viewport}
-            handleScroll={handleScroll}
-            handleSendMessage={handleSendMessage}
-            isMobile={isMobile}
-          />
+          <Box style={{ height: "100%", position: "relative" }}>
+            <ChatContainer
+              messages={messages}
+              isClearingChat={isClearingChat}
+              viewport={viewport}
+              handleScroll={handleScroll}
+              handleSendMessage={handleSendMessage}
+              isMobile={isMobile}
+            />
+          </Box>
         ) : (
           <Container h="calc(100vh - 60px)" fluid maw={1232}>
             <Group
@@ -152,13 +159,11 @@ function Chat() {
               align="stretch"
               justify={showIllustration ? "space-between" : "center"}
             >
-              {/* Left side - Illustration */}
               {showIllustration && (
                 <Container w={500} h="100%" py="md">
                   {illustrationSection()}
                 </Container>
               )}
-              {/* Right side - Chat Container */}
               <Container w={showIllustration ? 550 : 600} h="100%" py="md">
                 <ChatContainer
                   messages={messages}
