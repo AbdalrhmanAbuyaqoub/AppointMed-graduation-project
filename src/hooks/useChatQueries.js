@@ -15,7 +15,7 @@ export function useChatQueries() {
   // Welcome message from chatbot
   const welcomeMessage = {
     id: "welcome-message",
-    text: "Hello! 👋 I'm Samera your AI assistant. I'm here to help you to Book Your appointment. How can I help you today?",
+    text: "مرحباً! 👋 أنا مساعدك الذكي. أنا هنا لمساعدتك في حجز موعدك. كيف يمكنني مساعدتك اليوم؟\n\nHello! 👋 I'm your AI assistant. I'm here to help you to Book Your appointment. How can I help you today?",
     isUser: false,
     timestamp: new Date(),
   };

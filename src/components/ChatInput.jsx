@@ -6,8 +6,20 @@ import { useMediaQuery } from "@mantine/hooks";
 
 export function ChatInput({ onSendMessage }) {
   const [newMessage, setNewMessage] = useState("");
+  const [isRTL, setIsRTL] = useState(false);
   const isMobile = useMediaQuery("(max-width: 768px)");
   const inputRef = useRef(null);
+
+  // Function to detect if text contains Arabic
+  const containsArabic = (text) => {
+    const arabicPattern = /[\u0600-\u06FF]/;
+    return arabicPattern.test(text);
+  };
+
+  // Update RTL state when message changes
+  useEffect(() => {
+    setIsRTL(containsArabic(newMessage));
+  }, [newMessage]);
 
   // Keep focus on input after sending message
   useEffect(() => {
@@ -20,6 +32,7 @@ export function ChatInput({ onSendMessage }) {
     if (newMessage.trim()) {
       onSendMessage(newMessage.trim());
       setNewMessage("");
+      setIsRTL(false);
       // Immediately focus back on input to keep keyboard open
       if (isMobile && inputRef.current) {
         setTimeout(() => {
@@ -63,6 +76,12 @@ export function ChatInput({ onSendMessage }) {
         autoFocus={isMobile}
         style={{ flex: 1 }}
         radius="xl"
+        dir={isRTL ? "rtl" : "ltr"}
+        styles={{
+          input: {
+            textAlign: isRTL ? "right" : "left",
+          },
+        }}
       />
       <Tooltip label="Send message" position="top">
         <ActionIcon

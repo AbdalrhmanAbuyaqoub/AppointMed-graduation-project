@@ -1,8 +1,16 @@
 import React from "react";
 import { Avatar, Text, Group, Paper, Stack, Box } from "@mantine/core";
-import { IconUser, IconRobot } from "@tabler/icons-react";
+import { IconRobot } from "@tabler/icons-react";
 import styles from "../styles/Chat.module.css";
 import { useMediaQuery } from "@mantine/hooks";
+import { useAuthentication } from "../hooks/useAuthentication";
+import { getUserInitials } from "../utils/userUtils";
+
+// Helper to detect Arabic text
+function isArabicText(text) {
+  const arabicPattern = /[\u0600-\u06FF]/;
+  return arabicPattern.test(text);
+}
 
 // Helper to manually parse <b> tags
 function parseBold(text) {
@@ -26,6 +34,8 @@ function parseBold(text) {
 
 export function MessageBubble({ message }) {
   const isMobile = useMediaQuery("(max-width: 768px)");
+  const isArabic = isArabicText(message.text);
+  const { user } = useAuthentication();
 
   return (
     <Group
@@ -56,8 +66,14 @@ export function MessageBubble({ message }) {
             p={isMobile ? "xs" : "sm"}
           >
             <Text
+              c={message.isUser ? "white" : "black"}
               size={isMobile ? "sm" : "md"}
-              style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}
+              style={{
+                whiteSpace: "pre-wrap",
+                wordBreak: "break-word",
+                direction: isArabic ? "rtl" : "ltr",
+                textAlign: isArabic ? "right" : "left",
+              }}
             >
               {parseBold(message.text)}
             </Text>
@@ -73,11 +89,17 @@ export function MessageBubble({ message }) {
       {message.isUser && (
         <Avatar
           variant="filled"
+          color="gray.3"
           size={isMobile ? "sm" : "md"}
           radius="xl"
           className={styles.userAvatar}
         >
-          <IconUser size={isMobile ? "1rem" : "1.2rem"} />
+          <Text>
+            {getUserInitials({
+              firstName: user?.firstName,
+              lastName: user?.lastName,
+            })}
+          </Text>
         </Avatar>
       )}
     </Group>

@@ -7,9 +7,11 @@ function DeleteConfirmationModal({
   title,
   itemName,
   isLoading,
+  additionalMessage,
 }) {
   return (
     <Modal
+      radius="md"
       opened={isOpen}
       onClose={onClose}
       title={<Text fw={700}>{title}</Text>}
@@ -20,13 +22,19 @@ function DeleteConfirmationModal({
           Are you sure you want to delete {itemName}? This action cannot be
           undone.
         </Text>
+        {additionalMessage && (
+          <Text size="sm" c="dimmed">
+            {additionalMessage}
+          </Text>
+        )}
         <Group justify="flex-end" mt="md">
-          <Button variant="light" onClick={onClose}>
+          <Button radius="md" variant="light" onClick={onClose}>
             Cancel
           </Button>
           <Button
             variant="outline"
             color="red"
+            radius="md"
             onClick={onConfirm}
             loading={isLoading}
           >

@@ -148,8 +148,15 @@ function AppointmentsTable({
     if (!dateRange[0] || !dateRange[1]) return "Date Range";
 
     const formatDate = (date) => {
-      if (!date || !(date instanceof Date)) return "";
-      return date.toLocaleDateString("en-US", {
+      if (!date) return "";
+
+      // Handle both Date objects and date strings
+      const dateObj = date instanceof Date ? date : new Date(date);
+
+      // Check if the date is valid
+      if (isNaN(dateObj.getTime())) return "";
+
+      return dateObj.toLocaleDateString("en-US", {
         month: "short",
         day: "numeric",
         year: "numeric",
@@ -209,54 +216,118 @@ function AppointmentsTable({
     }
   };
 
-  // Filter appointments based on status, date range, and search query
-  useEffect(() => {
-    const filtered = appointments.filter((appointment) => {
-      // First check status filter
-      const matchesStatus =
-        statusFilter === "all" || appointment.status === parseInt(statusFilter);
-      if (!matchesStatus) return false;
+  // Helper function to get appointment date
+  const getAppointmentDate = (appointment) => {
+    if (appointment.rawDate && appointment.rawDate instanceof Date) {
+      return new Date(appointment.rawDate);
+    }
+    if (appointment.startDate) {
+      return new Date(appointment.startDate);
+    }
+    return new Date(appointment.date + " " + appointment.time);
+  };
 
-      // Then check search query if it exists
-      if (searchQuery) {
-        const searchLower = searchQuery.toLowerCase().trim();
+  // Helper function to calculate days from today
+  const getDayOffset = (date) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-        // Search only in patient name and appointment ID
-        const searchableFields = [
-          appointment.patientName,
-          appointment.id?.toString(),
-        ];
+    const appointmentDay = new Date(date);
+    appointmentDay.setHours(0, 0, 0, 0);
 
-        // Check if any field contains the search query
-        const matchesSearch = searchableFields.some((field) =>
-          field?.toLowerCase().includes(searchLower)
-        );
+    return Math.floor(
+      (appointmentDay.getTime() - today.getTime()) / (24 * 60 * 60 * 1000)
+    );
+  };
 
-        if (!matchesSearch) return false;
-      }
-
-      // Finally check date range if selected
-      if (!dateRange[0] || !dateRange[1]) return true;
-
+  // Sort function - today first, then tomorrow, etc.
+  const sortAppointmentsByNearest = (appointments) => {
+    return appointments.sort((a, b) => {
       try {
-        // Convert appointment date string to Date object
-        const appointmentDate = normalizeDate(new Date(appointment.date));
-        const startDate = normalizeDate(dateRange[0]);
-        const endDate = normalizeDate(dateRange[1]);
+        const aDate = getAppointmentDate(a);
+        const bDate = getAppointmentDate(b);
 
-        // Check if date is valid
-        if (!appointmentDate || !startDate || !endDate) return true;
+        // Check if dates are valid
+        const aValid = !isNaN(aDate.getTime());
+        const bValid = !isNaN(bDate.getTime());
 
-        // Compare dates
-        return appointmentDate >= startDate && appointmentDate <= endDate;
-      } catch (e) {
-        console.error("Error filtering appointment date:", e);
-        return true;
+        if (!aValid && !bValid) return (a.id || 0) - (b.id || 0);
+        if (!aValid) return 1;
+        if (!bValid) return -1;
+
+        // Calculate day offsets (today=0, tomorrow=1, yesterday=-1)
+        const aDayOffset = getDayOffset(aDate);
+        const bDayOffset = getDayOffset(bDate);
+
+        // Sort by day offset, then by time within the same day
+        if (aDayOffset !== bDayOffset) {
+          // Future/today first (0, 1, 2...), then past (-1, -2, -3...)
+          if (aDayOffset >= 0 && bDayOffset < 0) return -1;
+          if (aDayOffset < 0 && bDayOffset >= 0) return 1;
+
+          return aDayOffset - bDayOffset;
+        }
+
+        // Same day: sort by time
+        return aDate.getTime() - bDate.getTime();
+      } catch (error) {
+        console.error("Error sorting appointments:", error);
+        return (a.id || 0) - (b.id || 0);
       }
     });
+  };
 
-    setFilteredAppointments(filtered);
-    // Reset to first page when filters change
+  // Filter appointments by status, search query, and date range
+  const filterAppointments = (appointments) => {
+    return appointments.filter((appointment) => {
+      // Status filter
+      if (
+        statusFilter !== "all" &&
+        appointment.status !== parseInt(statusFilter)
+      ) {
+        return false;
+      }
+
+      // Search filter
+      if (searchQuery) {
+        const searchLower = searchQuery.toLowerCase().trim();
+        const searchableText = [
+          appointment.patientName,
+          appointment.id?.toString(),
+        ]
+          .join(" ")
+          .toLowerCase();
+
+        if (!searchableText.includes(searchLower)) {
+          return false;
+        }
+      }
+
+      // Date range filter
+      if (dateRange[0] && dateRange[1]) {
+        try {
+          const appointmentDate = normalizeDate(new Date(appointment.date));
+          const startDate = normalizeDate(dateRange[0]);
+          const endDate = normalizeDate(dateRange[1]);
+
+          if (appointmentDate && startDate && endDate) {
+            return appointmentDate >= startDate && appointmentDate <= endDate;
+          }
+        } catch (error) {
+          console.error("Error filtering by date:", error);
+        }
+      }
+
+      return true;
+    });
+  };
+
+  // Apply filters and sorting
+  useEffect(() => {
+    const filtered = filterAppointments(appointments);
+    const sorted = sortAppointmentsByNearest(filtered);
+
+    setFilteredAppointments(sorted);
     setCurrentPage(1);
   }, [appointments, statusFilter, searchQuery, dateRange]);
 

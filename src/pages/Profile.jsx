@@ -30,6 +30,7 @@ import { useAuthentication } from "../hooks/useAuthentication";
 import { useUserQueries } from "../hooks/useUserQueries";
 import { notifications } from "@mantine/notifications";
 import { getToken } from "../services/tokenService";
+import { getUserInitials, getFullName } from "../utils/userUtils";
 
 // Function to decode JWT token and extract user ID
 const decodeToken = (token) => {
@@ -243,19 +244,6 @@ function Profile({ isModal = false, onClose }) {
     }
   };
 
-  const getInitials = (firstName, lastName) => {
-    if (!firstName && !lastName) return "U";
-    const first = firstName ? firstName.charAt(0).toUpperCase() : "";
-    const last = lastName ? lastName.charAt(0).toUpperCase() : "";
-    return first + last;
-  };
-
-  const getFullName = (firstName, lastName) => {
-    if (!firstName && !lastName) return "User";
-    const fullName = `${firstName || ""} ${lastName || ""}`.trim();
-    return fullName;
-  };
-
   return (
     <Container size="lg" py="xl">
       <Stack gap="xl">
@@ -265,17 +253,22 @@ function Profile({ isModal = false, onClose }) {
             {/* Header with Avatar and Name */}
             <Group gap="xl" align="flex-start">
               <Avatar size="xl" radius="xl" variant="filled">
-                {getInitials(user?.firstName, user?.lastName)}
+                {getUserInitials({
+                  firstName: user?.firstName,
+                  lastName: user?.lastName,
+                })}
               </Avatar>
 
               <Stack gap="xs" style={{ flex: 1 }}>
                 <Title order={2} fz={28}>
-                  {getFullName(
-                    user?.firstName?.charAt(0).toUpperCase() +
+                  {getFullName({
+                    firstName:
+                      user?.firstName?.charAt(0).toUpperCase() +
                       user?.firstName?.slice(1),
-                    user?.lastName?.charAt(0).toUpperCase() +
-                      user?.lastName?.slice(1)
-                  )}
+                    lastName:
+                      user?.lastName?.charAt(0).toUpperCase() +
+                      user?.lastName?.slice(1),
+                  })}
                 </Title>
                 <Group gap="md">
                   <Badge size="lg" variant="filled" color="blue">
@@ -306,7 +299,14 @@ function Profile({ isModal = false, onClose }) {
                     Full Name:
                   </Text>
                   <Text size="sm">
-                    {getFullName(user?.firstName, user?.lastName)}
+                    {getFullName({
+                      firstName:
+                        user?.firstName?.charAt(0).toUpperCase() +
+                        user?.firstName?.slice(1),
+                      lastName:
+                        user?.lastName?.charAt(0).toUpperCase() +
+                        user?.lastName?.slice(1),
+                    })}
                   </Text>
                 </Group>
                 <Group gap="md">

@@ -110,7 +110,7 @@ export function NavbarMinimal({
         <NavbarLink
           {...link}
           key={link.label}
-          active={location.pathname === link.path}
+          active={location.pathname.startsWith(link.path)}
           onClick={() => handleNavigation(link.path)}
           expanded={isExpanded}
         />

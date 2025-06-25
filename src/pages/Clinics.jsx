@@ -78,7 +78,7 @@ function Clinics() {
             leftSection={<IconPlus size={20} />}
             onClick={() => setIsModalOpen(true)}
           >
-            Add New Clinic
+            New Clinic
           </Button>
         </Group>
 

@@ -276,7 +276,7 @@ const Register = () => {
       }}
     > */}
 
-      <Paper withBorder shadow="md" radius="lg" p="xl" mx="auto" w="500">
+      <Paper withBorder shadow="md" radius="lg" p="xl" mx="auto" w="600">
         <LoadingOverlay
           visible={isLoading || isVerifying}
           overlayProps={{ blur: 2 }}

@@ -18,7 +18,7 @@ export function ChatContainer({
       h="100%"
       radius={isMobile ? 0 : "lg"}
       shadow={isMobile ? "none" : "sm"}
-      //   bg={isMobile ? "green" : "red"}
+      bg="var(--mantine-color-gray-0)"
       pos="relative"
     >
       <LoadingOverlay visible={isClearingChat} />
@@ -36,12 +36,13 @@ export function ChatContainer({
           left: isMobile ? 0 : "auto",
           right: isMobile ? 0 : "auto",
           bottom: isMobile ? "60px" : "auto",
-          //   backgroundColor: isMobile ? "green" : "red",
+          backgroundColor: "var(--mantine-color-gray-0)",
         }}
       >
         <Stack
           gap="md"
           p="md"
+          pb="80px"
           justify="flex-end"
           style={{
             minHeight: "100%",
@@ -60,7 +61,8 @@ export function ChatContainer({
           right: 0,
           zIndex: 1000,
           height: "60px",
-          //   backgroundColor: isMobile ? "green" : "red",
+          backgroundColor: "var(--mantine-color-gray-0)",
+          borderTop: "1px solid var(--mantine-color-gray-2)",
         }}
       >
         <ChatInput onSendMessage={handleSendMessage} />

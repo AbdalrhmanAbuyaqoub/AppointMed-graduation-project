@@ -1,8 +1,8 @@
 .userBubble {
-  background: var(--mantine-primary-color-filled);
+  background: var(--mantine-primary-color-5);
   border-radius: var(--mantine-radius-lg) var(--mantine-radius-lg) 0
     var(--mantine-radius-lg);
-  color: var(--mantine-primary-color-contrast);
+  color: var(--mantine-color-white);
 }
 
 .botBubble {
@@ -16,8 +16,6 @@
 }
 
 .userAvatar {
-  background-color: var(--mantine-primary-color-filled);
-  color: var(--mantine-primary-color-contrast);
   box-shadow: var(--mantine-shadow-sm);
 }
 

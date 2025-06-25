@@ -118,7 +118,7 @@ const Login = () => {
         radius="lg"
         p="xl"
         w="100%"
-        maw={400}
+        maw={500}
         mx="auto"
         pos="relative"
       >

@@ -31,6 +31,7 @@ import { useNavigate } from "react-router-dom";
 import CreateAppointmentDrawer from "../components/CreateAppointmentDrawer";
 import TodaysAppointmentsTable from "../components/TodaysAppointmentsTable";
 import styles from "../styles/Dashboard.module.css";
+import { getUserInitials } from "../utils/userUtils";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -212,7 +213,7 @@ function Dashboard() {
 
               {/* left section - upcoming appointments */}
               <Paper withBorder radius="md" p="md" h={500}>
-                <Group justify="space-between" align="center">
+                <Group justify="space-between" align="center" mb="md">
                   <Group>
                     {/* <IconCalendar size={20} /> */}
                     <Title order={3} fz="18px">
@@ -232,8 +233,10 @@ function Dashboard() {
                 </Group>
 
                 <Box
-                  mah={600}
-                  style={{ overflowY: "auto" }}
+                  style={{
+                    overflowY: "auto",
+                    height: "calc(100% - 60px)",
+                  }}
                   className={styles.autoHideScrollbar}
                 >
                   <TodaysAppointmentsTable
@@ -286,11 +289,7 @@ function Dashboard() {
                       variant="filled"
                     >
                       <Text fz="sm">
-                        {doctor.name
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")
-                          .toUpperCase()}
+                        {getUserInitials({ fullName: doctor.name })}
                       </Text>
                     </Avatar>
                     <Stack gap="0">

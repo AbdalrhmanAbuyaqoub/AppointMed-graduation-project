@@ -31,6 +31,7 @@ import {
 } from "@tabler/icons-react";
 import { useNavigate } from "react-router-dom";
 import { theme } from "../theme";
+import { getUserInitials } from "../utils/userUtils";
 
 function AppointmentDetailsDrawer({
   opened,
@@ -143,11 +144,7 @@ function AppointmentDetailsDrawer({
               variant="filled"
             >
               <Text fz="sm">
-                {appointment.patientName
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")
-                  .toUpperCase()}
+                {getUserInitials({ fullName: appointment.patientName })}
               </Text>
             </Avatar>
             <Stack gap="0" c="dimmed">

@@ -20,6 +20,7 @@ import {
   IconTrash,
 } from "@tabler/icons-react";
 import { useNavigate } from "react-router-dom";
+import { getUserInitials } from "../utils/userUtils";
 
 export function PatientsTable({ searchQuery = "" }) {
   const { patients, isLoading, banPatient, unbanPatient } = useUserQueries();
@@ -105,11 +106,7 @@ export function PatientsTable({ searchQuery = "" }) {
                     variant="filled"
                   >
                     <Text fz="sm">
-                      {patient.fullName
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")
-                        .toUpperCase()}
+                      {getUserInitials({ fullName: patient.fullName })}
                     </Text>
                   </Avatar>
                   <Text

@@ -13,6 +13,7 @@ class NotificationService {
       autoClose: 5000,
       withBorder: true,
       withCloseButton: true,
+      position: "top-right",
     });
   }
 
@@ -28,6 +29,7 @@ class NotificationService {
       autoClose: 5000,
       withBorder: true,
       withCloseButton: true,
+      position: "top-right",
     });
   }
 
@@ -43,6 +45,7 @@ class NotificationService {
       autoClose: 5000,
       withBorder: true,
       withCloseButton: true,
+      position: "top-right",
     });
   }
 
@@ -58,6 +61,7 @@ class NotificationService {
       autoClose: 5000,
       withBorder: true,
       withCloseButton: true,
+      position: "top-right",
     });
   }
 

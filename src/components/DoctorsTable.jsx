@@ -20,6 +20,7 @@ import {
 import { IconUserOff } from "@tabler/icons-react";
 import { useNavigate } from "react-router-dom";
 import { theme } from "../theme";
+import { getUserInitials } from "../utils/userUtils";
 
 // Working Days Component
 function WorkingDaysDisplay({ doctorId, workingDays }) {
@@ -162,11 +163,7 @@ export function DoctorsTable({ searchQuery = "" }) {
                     variant="filled"
                   >
                     <Text fz="sm">
-                      {doctor.name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")
-                        .toUpperCase()}
+                      {getUserInitials({ fullName: doctor.name })}
                     </Text>
                   </Avatar>
                   <Text

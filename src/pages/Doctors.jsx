@@ -127,7 +127,7 @@ export default function Doctors() {
             onClick={handleAddDoctorClick}
             radius="xl"
           >
-            Add New Doctor
+            New Doctor
           </Button>
         </Group>
 

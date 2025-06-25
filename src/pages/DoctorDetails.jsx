@@ -14,6 +14,8 @@ import {
   Paper,
   Box,
   useMantineTheme,
+  SimpleGrid,
+  Divider,
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import {
@@ -23,9 +25,13 @@ import {
   IconMail,
   IconPhone,
   IconMapPin,
+  IconUser,
+  IconCircleCheck,
+  IconBuildingHospital,
 } from "@tabler/icons-react";
 import { useState } from "react";
 import WorkingHours from "../components/WorkingHours/WorkingHours";
+import { getUserInitials } from "../utils/userUtils";
 
 export default function DoctorDetails() {
   const { id } = useParams();
@@ -131,170 +137,204 @@ export default function DoctorDetails() {
         </ActionIcon>
         <Title order={2}>Doctor Details</Title>
       </Group>
-      <Paper radius={"md"} p={"xl"} withBorder maw={800}>
-        <Group gap={"xl"}>
-          <Stack gap="lg">
-            <Avatar size={80} radius={80} variant="filled">
-              {doctor.name
-                .split(" ")
-                .map((n) => n[0])
-                .join("")
-                .toUpperCase()}
+
+      {/* Profile Information Card */}
+      <Paper p="xl" radius="md" withBorder maw={1232}>
+        <Stack gap="xl">
+          {/* Header with Avatar and Name */}
+          <Group gap="xl" align="flex-start">
+            <Avatar size="xl" radius="50%" variant="filled" color="gray.3">
+              <Text fz={30}>{getUserInitials({ fullName: doctor.name })}</Text>
             </Avatar>
 
-            {isEditing ? (
-              <Paper shadow="xs" p="xl" radius="md">
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    handleSave();
-                  }}
-                >
-                  <Stack gap="md">
-                    <TextInput
-                      label="First Name"
-                      value={editedDoctor.firstName}
-                      onChange={(e) =>
-                        setEditedDoctor({
-                          ...editedDoctor,
-                          firstName: e.target.value,
-                        })
-                      }
-                      required
-                    />
-                    <TextInput
-                      label="Last Name"
-                      value={editedDoctor.lastName}
-                      onChange={(e) =>
-                        setEditedDoctor({
-                          ...editedDoctor,
-                          lastName: e.target.value,
-                        })
-                      }
-                      required
-                    />
-                    <TextInput
-                      label="Email"
-                      type="email"
-                      value={editedDoctor.email}
-                      onChange={(e) =>
-                        setEditedDoctor({
-                          ...editedDoctor,
-                          email: e.target.value,
-                        })
-                      }
-                      required
-                    />
-                    <TextInput
-                      label="Phone Number"
-                      value={editedDoctor.phoneNumber}
-                      onChange={(e) =>
-                        setEditedDoctor({
-                          ...editedDoctor,
-                          phoneNumber: e.target.value,
-                        })
-                      }
-                      required
-                    />
-                    <TextInput
-                      label="Address"
-                      value={editedDoctor.address}
-                      onChange={(e) =>
-                        setEditedDoctor({
-                          ...editedDoctor,
-                          address: e.target.value,
-                        })
-                      }
-                    />
-                    <Group justify="flex-end" mt="md">
-                      <Button
-                        variant="light"
-                        onClick={handleCancelEditing}
-                        type="button"
-                      >
-                        Cancel
-                      </Button>
-                      <Button type="submit" loading={isUpdating}>
-                        Save Changes
-                      </Button>
-                    </Group>
-                  </Stack>
-                </form>
-              </Paper>
-            ) : (
-              <Stack gap={"md"} align="left">
-                <Group>
-                  <Title m={0} order={2} fw={600}>
-                    {doctor.name}
-                  </Title>
-                  <Badge variant="light" size="lg">
-                    {doctor.clinicName}
-                  </Badge>
-                </Group>
-                <Badge c={"black"} color="gray.3">
-                  id: {doctor.id}
+            <Stack gap="xs" style={{ flex: 1 }}>
+              <Title order={2} fz={28}>
+                {doctor.name}
+              </Title>
+              <Group gap="md">
+                <Badge size="lg" variant="filled" color="blue">
+                  DOCTOR
                 </Badge>
-
-                <Group>
-                  <Button
-                    size="xs"
-                    color="black"
-                    variant="outline"
-                    leftSection={<IconEdit size={16} />}
-                    onClick={handleStartEditing}
-                  >
-                    Edit Details
-                  </Button>
-                  <Button
-                    size="xs"
-                    variant="outline"
-                    color="red"
-                    leftSection={<IconTrash size={16} />}
-                    onClick={handleDelete}
-                    loading={isDeleting}
-                  >
-                    Delete Doctor
-                  </Button>
-                </Group>
-              </Stack>
-            )}
-          </Stack>
-
-          {/* Additional Information */}
-          {!isEditing && (
-            <Stack gap="md">
-              <Title order={3}>Contact Information</Title>
-              <Group>
-                <IconMail size={20} stroke={1.5} color="gray" />
-                <Text>{doctor.email}</Text>
+                <Badge variant="filled" size="lg">
+                  {doctor.clinicName}
+                </Badge>
               </Group>
-              <Group>
-                <IconPhone size={20} stroke={1.5} color="gray" />
-                <Text>{doctor.phoneNumber}</Text>
-              </Group>
-              <Group>
-                <IconMapPin size={20} stroke={1.5} color="gray" />
-                <Text>{doctor.address || "No address provided"}</Text>
-              </Group>
-
-              {doctor.specialties && doctor.specialties.length > 0 && (
-                <>
-                  <Text fw={500}>Specialties:</Text>
-                  <Group gap="xs">
-                    {doctor.specialties.map((specialty) => (
-                      <Badge key={specialty} variant="outline" size="sm">
-                        {specialty}
-                      </Badge>
-                    ))}
-                  </Group>
-                </>
-              )}
             </Stack>
+            {/* Action Buttons */}
+            <Group gap="md">
+              <Button
+                leftSection={<IconEdit size={16} />}
+                onClick={handleStartEditing}
+                variant="outline"
+                radius="md"
+                // color="blue"
+              >
+                Edit Details
+              </Button>
+
+              <Button
+                leftSection={<IconTrash size={16} />}
+                onClick={handleDelete}
+                variant="outline"
+                color="red"
+                radius="md"
+                loading={isDeleting}
+              >
+                Delete Doctor
+              </Button>
+            </Group>
+          </Group>
+
+          <Divider />
+
+          {isEditing ? (
+            <Paper shadow="xs" p="xl" radius="md">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleSave();
+                }}
+              >
+                <Stack gap="md">
+                  <TextInput
+                    label="First Name"
+                    value={editedDoctor.firstName}
+                    onChange={(e) =>
+                      setEditedDoctor({
+                        ...editedDoctor,
+                        firstName: e.target.value,
+                      })
+                    }
+                    required
+                  />
+                  <TextInput
+                    label="Last Name"
+                    value={editedDoctor.lastName}
+                    onChange={(e) =>
+                      setEditedDoctor({
+                        ...editedDoctor,
+                        lastName: e.target.value,
+                      })
+                    }
+                    required
+                  />
+                  <TextInput
+                    label="Email"
+                    type="email"
+                    value={editedDoctor.email}
+                    onChange={(e) =>
+                      setEditedDoctor({
+                        ...editedDoctor,
+                        email: e.target.value,
+                      })
+                    }
+                    required
+                  />
+                  <TextInput
+                    label="Phone Number"
+                    value={editedDoctor.phoneNumber}
+                    onChange={(e) =>
+                      setEditedDoctor({
+                        ...editedDoctor,
+                        phoneNumber: e.target.value,
+                      })
+                    }
+                    required
+                  />
+                  <TextInput
+                    label="Address"
+                    value={editedDoctor.address}
+                    onChange={(e) =>
+                      setEditedDoctor({
+                        ...editedDoctor,
+                        address: e.target.value,
+                      })
+                    }
+                  />
+                  <Group justify="flex-end" mt="md">
+                    <Button
+                      radius="md"
+                      variant="outline"
+                      onClick={handleCancelEditing}
+                      type="button"
+                    >
+                      Cancel
+                    </Button>
+                    <Button radius="md" type="submit" loading={isUpdating}>
+                      Save Changes
+                    </Button>
+                  </Group>
+                </Stack>
+              </form>
+            </Paper>
+          ) : (
+            <>
+              {/* User Details Grid */}
+              <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="xl">
+                {/* Basic Information */}
+                <Stack gap="md">
+                  <Title order={3} size="h4">
+                    Basic Information
+                  </Title>
+                  <Group gap="md">
+                    <IconUser size={20} color="var(--mantine-color-gray-6)" />
+                    <Text size="sm" fw={500}>
+                      Full Name:
+                    </Text>
+                    <Text size="sm">{doctor.name}</Text>
+                  </Group>
+                  <Group gap="md">
+                    <IconMail size={20} color="var(--mantine-color-gray-6)" />
+                    <Text size="sm" fw={500}>
+                      Email:
+                    </Text>
+                    <Text size="sm">{doctor.email || "No email provided"}</Text>
+                  </Group>
+                  <Group gap="md">
+                    <IconBuildingHospital
+                      size={20}
+                      color="var(--mantine-color-gray-6)"
+                    />
+                    <Text size="sm" fw={500}>
+                      Clinic:
+                    </Text>
+                    <Text size="sm">{doctor.clinicName}</Text>
+                  </Group>
+                </Stack>
+
+                {/* Contact Information */}
+                <Stack gap="md">
+                  <Title order={3} size="h4">
+                    Contact Information
+                  </Title>
+                  <Group gap="md">
+                    <IconPhone size={20} color="var(--mantine-color-gray-6)" />
+                    <Text size="sm" fw={500}>
+                      Phone:
+                    </Text>
+                    <Text size="sm">
+                      {doctor.phoneNumber || "Not provided"}
+                    </Text>
+                  </Group>
+                  <Group gap="md">
+                    <IconMapPin size={20} color="var(--mantine-color-gray-6)" />
+                    <Text size="sm" fw={500}>
+                      Address:
+                    </Text>
+                    <Text size="sm">{doctor.address || "Not provided"}</Text>
+                  </Group>
+                </Stack>
+              </SimpleGrid>
+
+              {/* <Divider /> */}
+            </>
           )}
-        </Group>
+        </Stack>
       </Paper>
-      <Paper p={"xl"} mt={"xl"} radius={"md"} withBorder maw={800}>
-        <Stack gap={"xl"}>
+
+      {/* Working Hours Section */}
+      <Paper p="xl" mt="xl" radius="md" withBorder maw={1232}>
+        <Stack gap="xl">
           <Group justify="space-between" align="center">
             <Title order={3}>Working Hours</Title>
           </Group>

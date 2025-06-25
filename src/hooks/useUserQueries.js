@@ -170,20 +170,41 @@ export function useUserQueries() {
     },
   });
 
-  // Mutation for deleting account
+  // Mutation for deleting account (can be used for patients too)
   const deleteAccountMutation = useMutation({
     mutationFn: ({ email, id }) => userService.deleteAccount(email, id),
+    onMutate: async ({ id }) => {
+      // Cancel outgoing refetches so they don't overwrite our optimistic update
+      await queryClient.cancelQueries({ queryKey: ["patients"] });
+
+      // Snapshot the previous value
+      const previousPatients = queryClient.getQueryData(["patients"]);
+
+      // Optimistically remove the patient from the list
+      queryClient.setQueryData(["patients"], (oldPatients) =>
+        oldPatients.filter((patient) => patient.id !== id)
+      );
+
+      // Return context object with the snapshot
+      return { previousPatients };
+    },
     onSuccess: () => {
+      // Refetch to ensure server state is in sync
+      queryClient.invalidateQueries({ queryKey: ["patients"] });
       notifications.show({
         title: "Success",
-        message: "Account deleted successfully",
+        message: "Patient deleted successfully",
         color: "green",
       });
     },
-    onError: (error) => {
+    onError: (error, { id }, context) => {
+      // Rollback to the previous state on error
+      if (context?.previousPatients) {
+        queryClient.setQueryData(["patients"], context.previousPatients);
+      }
       notifications.show({
         title: "Error",
-        message: error.message || "Failed to delete account",
+        message: error.message || "Failed to delete patient",
         color: "red",
       });
     },
