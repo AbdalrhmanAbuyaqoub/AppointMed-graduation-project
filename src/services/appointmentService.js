@@ -292,4 +292,33 @@ export const appointmentService = {
       throw error;
     }
   },
+
+  /**
+   * Check available time slots for a doctor
+   * @param {number} doctorId - The doctor ID
+   * @param {Object} data - The time slot data
+   * @param {number} data.id - The appointment ID (optional, for updates)
+   * @param {string} data.from - Start time in ISO format
+   * @param {string} data.to - End time in ISO format
+   * @returns {Promise<{isAvailable: boolean, conflictingAppointments?: Object[]}>}
+   */
+  getAvailableSlots: async (doctorId, data) => {
+    try {
+      const params = new URLSearchParams();
+      if (data.id) params.append("id", data.id);
+      params.append("from", data.from);
+      params.append("to", data.to);
+
+      const response = await api.get(
+        `/Appointment/doctors/${doctorId}/available-slots?${params.toString()}`
+      );
+      return response.data;
+    } catch (error) {
+      console.error(
+        `Error checking available slots for doctor ${doctorId}:`,
+        error
+      );
+      throw error;
+    }
+  },
 };

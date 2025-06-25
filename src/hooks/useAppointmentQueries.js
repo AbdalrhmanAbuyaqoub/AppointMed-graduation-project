@@ -133,6 +133,24 @@ export function useAppointmentQueries() {
     },
   });
 
+  // Query for checking available time slots
+  const getAvailableSlots = (doctorId, timeSlotData) => {
+    return useQuery({
+      queryKey: ["available-slots", doctorId, timeSlotData],
+      queryFn: () =>
+        appointmentService.getAvailableSlots(doctorId, timeSlotData),
+      enabled: !!doctorId && !!timeSlotData?.from && !!timeSlotData?.to,
+      retry: 1,
+      staleTime: 0, // Always fetch fresh data
+    });
+  };
+
+  // Mutation for checking available time slots (for manual checks)
+  const checkAvailableSlots = useMutation({
+    mutationFn: ({ doctorId, timeSlotData }) =>
+      appointmentService.getAvailableSlots(doctorId, timeSlotData),
+  });
+
   return {
     // Queries
     appointments,
@@ -143,6 +161,7 @@ export function useAppointmentQueries() {
     getAppointmentsByDoctor,
     getAppointmentsByUser,
     getAppointmentStatus,
+    getAvailableSlots,
 
     // Mutations
     createAppointment,
@@ -150,5 +169,6 @@ export function useAppointmentQueries() {
     updateAppointment,
     deleteAppointment,
     updateAppointmentStatus,
+    checkAvailableSlots,
   };
 }

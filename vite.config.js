@@ -5,6 +5,15 @@ import svgr from "vite-plugin-svgr";
 
 export default defineConfig({
   plugins: [react(), Inspect(), svgr()],
+  build: {
+    minify: "terser",
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+      },
+    },
+  },
   server: {
     watch: {
       usePolling: true,
