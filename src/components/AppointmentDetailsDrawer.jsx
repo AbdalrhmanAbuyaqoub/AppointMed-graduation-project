@@ -32,6 +32,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { theme } from "../theme";
 import { getUserInitials } from "../utils/userUtils";
+import { useUserQueries } from "../hooks/useUserQueries";
 
 function AppointmentDetailsDrawer({
   opened,
@@ -41,8 +42,12 @@ function AppointmentDetailsDrawer({
   onDelete,
 }) {
   const navigate = useNavigate();
+  const { patients } = useUserQueries();
 
   if (!appointment) return null;
+
+  // Find the patient details using patientId
+  const patient = patients.find((p) => p.id === appointment.patientId);
 
   const currentStatus = appointment.status;
 
@@ -154,8 +159,7 @@ function AppointmentDetailsDrawer({
               <Group gap="4" c="dimmed">
                 <IconPhone size={16} />
                 <Text size="sm" c="dimmed">
-                  00000fixMe000
-                  {/* TODO: Add phone number */}
+                  {patient?.phoneNumber || "Not provided"}
                 </Text>
               </Group>
             </Stack>
