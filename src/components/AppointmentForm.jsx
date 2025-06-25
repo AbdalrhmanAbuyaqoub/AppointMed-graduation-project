@@ -543,7 +543,7 @@ function AppointmentForm({ onSubmit, isLoading, initialValues = null }) {
           <Autocomplete
             radius="md"
             label="Start Time"
-            placeholder="Type or select start time (e.g., 2:30 PM or 14:30)"
+            placeholder="Type or select start time"
             required
             data={timeSlotOptions}
             disabled={
