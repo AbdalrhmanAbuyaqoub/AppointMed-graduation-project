@@ -13,6 +13,15 @@ export default defineConfig({
         drop_debugger: true,
       },
     },
+    rollupOptions: {
+      output: {
+        chunkFileNames: "assets/[name]-[hash].js",
+        entryFileNames: "assets/[name]-[hash].js",
+        assetFileNames: "assets/[name]-[hash].[ext]",
+      },
+    },
+    assetsDir: "assets",
+    sourcemap: false,
   },
   server: {
     watch: {

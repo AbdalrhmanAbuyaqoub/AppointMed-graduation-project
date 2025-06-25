@@ -1,4 +1,19 @@
-import { lazy } from "react";
+// import { lazy } from "react";
+
+// Regular imports instead of lazy loading to avoid GitHub Pages issues
+import Landing from "../pages/Landing";
+import Login from "../pages/Login";
+import Register from "../pages/Register";
+import Chat from "../pages/Chat";
+import Dashboard from "../pages/Dashboard";
+import Appointments from "../pages/Appointments";
+import Clinics from "../pages/Clinics";
+import ClinicDetails from "../pages/ClinicDetails";
+import Doctors from "../pages/Doctors";
+import DoctorDetails from "../pages/DoctorDetails";
+import Patients from "../pages/Patients";
+import PatientDetails from "../pages/PatientDetails";
+import Profile from "../pages/Profile";
 
 // Define all routes in a centralized object
 export const ROUTES = {
@@ -22,26 +37,26 @@ export const ROUTES = {
   PROFILE: "/profile",
 };
 
-// Lazy-loaded components with better naming
+// Components with regular imports instead of lazy loading
 export const LazyComponents = {
   // Public pages
-  Landing: lazy(() => import("../pages/Landing")),
-  Login: lazy(() => import("../pages/Login")),
-  Register: lazy(() => import("../pages/Register")),
+  Landing,
+  Login,
+  Register,
 
   // User pages
-  Chat: lazy(() => import("../pages/Chat")),
+  Chat,
 
   // Admin pages
-  Dashboard: lazy(() => import("../pages/Dashboard")),
-  Appointments: lazy(() => import("../pages/Appointments")),
-  Clinics: lazy(() => import("../pages/Clinics")),
-  ClinicDetails: lazy(() => import("../pages/ClinicDetails")),
-  Doctors: lazy(() => import("../pages/Doctors")),
-  DoctorDetails: lazy(() => import("../pages/DoctorDetails")),
-  Patients: lazy(() => import("../pages/Patients")),
-  PatientDetails: lazy(() => import("../pages/PatientDetails")),
-  Profile: lazy(() => import("../pages/Profile")),
+  Dashboard,
+  Appointments,
+  Clinics,
+  ClinicDetails,
+  Doctors,
+  DoctorDetails,
+  Patients,
+  PatientDetails,
+  Profile,
 };
 
 // Get default route based on user role
