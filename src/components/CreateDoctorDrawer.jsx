@@ -57,8 +57,6 @@ function CreateDoctorDrawer({
         selectedClinic: clinicId ? clinicId.toString() : "",
       });
       onClose();
-
-      NotificationService.success("Success", "Doctor added successfully");
     } catch (error) {
       console.error("Error creating doctor:", error);
       NotificationService.error(

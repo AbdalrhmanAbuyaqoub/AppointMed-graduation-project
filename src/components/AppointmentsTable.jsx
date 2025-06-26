@@ -23,7 +23,7 @@ import { DatePicker } from "@mantine/dates";
 import { useState, useEffect } from "react";
 import { useAppointmentQueries } from "../hooks/useAppointmentQueries";
 import { notifications } from "@mantine/notifications";
-import AppointmentForm from "./AppointmentForm";
+import EditAppointmentForm from "./EditAppointmentForm";
 import AppointmentDetailsDrawer from "./AppointmentDetailsDrawer";
 
 // Helper function to get date ranges
@@ -617,25 +617,21 @@ function AppointmentsTable({
           />
         </Group>
       )}
-      {/* TODO: add appointment details to form , make sure it works */}
-      {/* Edit Modal */}
+      {/* Edit Appointment Modal */}
       <Modal
         opened={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
-        title="Edit Appointment"
+        title={<Text fw={600}>Edit Appointment</Text>}
         size="lg"
+        radius="md"
+        centered
       >
         {selectedAppointment && (
-          <AppointmentForm
-            initialValues={{
-              doctorId: selectedAppointment.doctor?.id?.toString(),
-              patientName: selectedAppointment.patientName,
-              patientPhone: selectedAppointment.patientPhone || "",
-              startTime: new Date(selectedAppointment.rawDate),
-              notes: selectedAppointment.notes || "",
-            }}
+          <EditAppointmentForm
+            appointment={selectedAppointment}
             onSubmit={handleUpdate}
             isLoading={updateAppointment.isPending}
+            onCancel={() => setIsEditModalOpen(false)}
           />
         )}
       </Modal>

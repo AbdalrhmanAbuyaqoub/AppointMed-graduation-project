@@ -36,7 +36,8 @@ export function CreateClinicModal({ opened, onClose }) {
     <Modal
       xOffset={{ m: 200 }}
       centered
-      withOverlay={false}
+      // withOverlay={false}
+      overlayProps={{ opacity: 0.5 }}
       opened={opened}
       onClose={handleClose}
       title={

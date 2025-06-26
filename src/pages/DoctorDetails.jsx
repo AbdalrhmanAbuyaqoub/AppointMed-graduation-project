@@ -32,6 +32,7 @@ import {
 import { useState } from "react";
 import WorkingHours from "../components/WorkingHours/WorkingHours";
 import { getUserInitials } from "../utils/userUtils";
+import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
 
 export default function DoctorDetails() {
   const { id } = useParams();
@@ -47,6 +48,7 @@ export default function DoctorDetails() {
   } = useDoctorQueries();
   const [isEditing, setIsEditing] = useState(false);
   const [editedDoctor, setEditedDoctor] = useState(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   // Find the specific doctor
   const doctor = doctors.find((d) => d.id === Number(id));
@@ -75,18 +77,10 @@ export default function DoctorDetails() {
   const handleDelete = async () => {
     try {
       await deleteDoctor(Number(id));
-      notifications.show({
-        title: "Success",
-        message: "Doctor deleted successfully",
-        color: "green",
-      });
-      navigate("/doctors");
+      navigate(-1);
     } catch (error) {
-      notifications.show({
-        title: "Error",
-        message: error.message || "Failed to delete doctor",
-        color: "red",
-      });
+      // Error is already handled by the mutation
+      console.error("Failed to delete doctor:", error);
     }
   };
 
@@ -101,18 +95,10 @@ export default function DoctorDetails() {
         address: editedDoctor.address,
       });
 
-      notifications.show({
-        title: "Success",
-        message: "Doctor information updated successfully",
-        color: "green",
-      });
       setIsEditing(false);
     } catch (error) {
-      notifications.show({
-        title: "Error",
-        message: error.message || "Failed to update doctor information",
-        color: "red",
-      });
+      // Error is already handled by the mutation
+      console.error("Failed to update doctor information:", error);
     }
   };
 
@@ -127,12 +113,7 @@ export default function DoctorDetails() {
   return (
     <Container pt={20} maw={1232} fluid>
       <Group mb="xl">
-        <ActionIcon
-          hiddenFrom="sm"
-          variant="subtle"
-          onClick={() => navigate("/doctors")}
-          size="lg"
-        >
+        <ActionIcon variant="subtle" onClick={() => navigate(-1)} size="lg">
           <IconArrowLeft size={20} />
         </ActionIcon>
         <Title order={2}>Doctor Details</Title>
@@ -174,7 +155,7 @@ export default function DoctorDetails() {
 
               <Button
                 leftSection={<IconTrash size={16} />}
-                onClick={handleDelete}
+                onClick={() => setIsDeleteModalOpen(true)}
                 variant="outline"
                 color="red"
                 radius="md"
@@ -341,6 +322,17 @@ export default function DoctorDetails() {
           <WorkingHours doctorId={id} />
         </Stack>
       </Paper>
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDelete}
+        title="Delete Doctor"
+        itemName={`"${doctor.name}"`}
+        isLoading={isDeleting}
+        additionalMessage="This will permanently remove the doctor from the system."
+      />
     </Container>
   );
 }

@@ -154,7 +154,7 @@ function ClinicDetails() {
 
     try {
       await deleteClinic(Number(id));
-      navigate("/clinics");
+      navigate(-1);
     } catch (error) {
       console.error("Failed to delete clinic:", error);
       // The error notification is already handled by the mutation
@@ -175,11 +175,7 @@ function ClinicDetails() {
     return (
       <Container pt={20} maw={1232} fluid>
         <Group mb="xl">
-          <ActionIcon
-            variant="subtle"
-            onClick={() => navigate("/clinics")}
-            size="lg"
-          >
+          <ActionIcon variant="subtle" onClick={() => navigate(-1)} size="lg">
             <IconArrowLeft size={20} />
           </ActionIcon>
           <Title order={2}>Clinic Not Found</Title>
@@ -197,11 +193,7 @@ function ClinicDetails() {
     return (
       <Container pt={20} maw={1232} fluid>
         <Group mb="xl">
-          <ActionIcon
-            variant="subtle"
-            onClick={() => navigate("/clinics")}
-            size="lg"
-          >
+          <ActionIcon variant="subtle" onClick={() => navigate(-1)} size="lg">
             <IconArrowLeft size={20} />
           </ActionIcon>
           <Title order={2}>Clinic Not Found</Title>
@@ -232,12 +224,7 @@ function ClinicDetails() {
       />
 
       <Group mb="xl">
-        <ActionIcon
-          hiddenFrom="sm"
-          variant="subtle"
-          onClick={() => navigate("/clinics")}
-          size="lg"
-        >
+        <ActionIcon variant="subtle" onClick={() => navigate(-1)} size="lg">
           <IconArrowLeft size={20} />
         </ActionIcon>
         <Title order={2}>Clinic Details</Title>

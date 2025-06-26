@@ -13,10 +13,19 @@ import { notifications } from "@mantine/notifications";
 import { IconCheck, IconCopy } from "@tabler/icons-react";
 import { useAppointmentQueries } from "../hooks/useAppointmentQueries";
 import AppointmentForm from "./AppointmentForm";
+import { useState, useEffect } from "react";
 
 function CreateAppointmentDrawer({ opened, onClose }) {
+  const [resetTrigger, setResetTrigger] = useState(0);
   const { createAppointmentWithPatient, createAppointment } =
     useAppointmentQueries();
+
+  // Reset form when drawer opens
+  useEffect(() => {
+    if (opened) {
+      setResetTrigger((prev) => prev + 1);
+    }
+  }, [opened]);
 
   const handleCreateAppointment = async (values) => {
     try {
@@ -35,6 +44,25 @@ function CreateAppointmentDrawer({ opened, onClose }) {
 
       // Handle success with different messages based on whether a new user was created
       if (isNewPatient && response.userCreated && response.temporaryPassword) {
+        console.log("🎉 APPOINTMENT WITH NEW USER CREATED SUCCESSFULLY:");
+        console.log("📋 Full API Response:", JSON.stringify(response, null, 2));
+        console.log("👤 New User Details:");
+        console.log("  - User Created:", response.userCreated);
+        console.log("  - Temporary Password:", response.temporaryPassword);
+        console.log("📅 Created Appointment:");
+        if (response.appointment) {
+          console.log("  - Appointment ID:", response.appointment.id);
+          console.log("  - Patient Name:", response.appointment.patientName);
+          console.log("  - Doctor Name:", response.appointment.doctorName);
+          console.log("  - Clinic Name:", response.appointment.clinicName);
+          console.log("  - Start Date:", response.appointment.startDate);
+          console.log("  - End Date:", response.appointment.endDate);
+          console.log("  - Doctor ID:", response.appointment.doctorId);
+          console.log("  - User ID:", response.appointment.userId);
+          console.log("  - Notes:", response.appointment.notes);
+        }
+        console.log("✉️ Message from API:", response.message);
+
         // Create a custom notification with copy functionality
         const notificationContent = (
           <Stack gap="xs">
@@ -78,7 +106,25 @@ function CreateAppointmentDrawer({ opened, onClose }) {
           color: "green",
           autoClose: false, // Don't auto-close so user can copy the password
         });
+      } else if (isNewPatient && !response.userCreated) {
+        // This means we tried to create a new patient but found an existing user
+        console.log("⚠️ NEW PATIENT REQUEST FOUND EXISTING USER:");
+        console.log("📋 API Response:", JSON.stringify(response, null, 2));
+        console.log("🔍 Analysis:");
+        console.log("  - Intended: Create new patient");
+        console.log("  - Result: Found existing user with same email");
+        console.log("  - Existing Patient:", response.appointment?.patientName);
+        console.log("  - User ID:", response.appointment?.userId);
+
+        notifications.show({
+          title: "Existing Patient Found",
+          message: `Appointment created successfully. Found existing patient "${response.appointment?.patientName}" with this email address.`,
+          color: "orange",
+        });
       } else {
+        console.log("✅ APPOINTMENT CREATED SUCCESSFULLY:");
+        console.log("📋 API Response:", JSON.stringify(response, null, 2));
+
         notifications.show({
           title: "Success",
           message: "Appointment created successfully",
@@ -86,6 +132,8 @@ function CreateAppointmentDrawer({ opened, onClose }) {
         });
       }
 
+      // Reset the form after successful creation
+      setResetTrigger((prev) => prev + 1);
       onClose();
     } catch (error) {
       console.error("Full error object:", error);
@@ -159,6 +207,7 @@ function CreateAppointmentDrawer({ opened, onClose }) {
       <AppointmentForm
         onSubmit={handleCreateAppointment}
         isLoading={isLoading}
+        resetTrigger={resetTrigger}
       />
     </Drawer>
   );

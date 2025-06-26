@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useUserQueries } from "../hooks/useUserQueries";
 import { useAppointmentQueries } from "../hooks/useAppointmentQueries";
+import { useClinicQueries } from "../hooks/useClinicQueries";
 import {
   Badge,
   Group,
@@ -63,6 +64,7 @@ export default function PatientDetails() {
     isDeletingAccount,
   } = useUserQueries();
   const { getAppointmentsByUser } = useAppointmentQueries();
+  const { clinics, doctors } = useClinicQueries();
 
   // Find the specific patient
   const patient = patients.find((p) => p.id === id);
@@ -74,6 +76,19 @@ export default function PatientDetails() {
     error: appointmentsError,
   } = getAppointmentsByUser(id);
 
+  // Helper function to get clinic name from various sources
+  const getClinicName = (appointment) => {
+    if (appointment.doctor?.id) {
+      const doctorId = appointment.doctor.id;
+      const doctor = doctors.find((d) => d.id === doctorId);
+      if (doctor?.clinicName) {
+        return doctor.clinicName;
+      }
+    }
+
+    return "N/A";
+  };
+
   const isLoading = isPatientsLoading || isAppointmentsLoading;
 
   const handleDeletePatient = () => {
@@ -83,7 +98,7 @@ export default function PatientDetails() {
         id: patient.id,
       });
       setIsDeleteModalOpen(false);
-      navigate("/patients");
+      navigate(-1);
     }
   };
 
@@ -99,11 +114,7 @@ export default function PatientDetails() {
     return (
       <Container pt={20} maw={1232} fluid>
         <Group mb="xl">
-          <ActionIcon
-            variant="subtle"
-            onClick={() => navigate("/patients")}
-            size="lg"
-          >
+          <ActionIcon variant="subtle" onClick={() => navigate(-1)} size="lg">
             <IconArrowLeft size={20} />
           </ActionIcon>
           <Title order={2}>Patient Not Found</Title>
@@ -120,12 +131,7 @@ export default function PatientDetails() {
   return (
     <Container pt={20} maw={1232} fluid>
       <Group mb="xl">
-        <ActionIcon
-          hiddenFrom="sm"
-          variant="subtle"
-          onClick={() => navigate("/patients")}
-          size="lg"
-        >
+        <ActionIcon variant="subtle" onClick={() => navigate(-1)} size="lg">
           <IconArrowLeft size={20} />
         </ActionIcon>
         <Title order={2}>Patient Details</Title>
@@ -323,7 +329,7 @@ export default function PatientDetails() {
                       </Table.Td>
                       <Table.Td>
                         <Text size="sm" c="dimmed">
-                          {appointment.clinicName || "N/A"}
+                          {getClinicName(appointment)}
                         </Text>
                       </Table.Td>
                       <Table.Td>

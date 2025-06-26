@@ -26,11 +26,15 @@ import timezone from "dayjs/plugin/timezone";
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-function AppointmentForm({ onSubmit, isLoading, initialValues = null }) {
+function AppointmentForm({
+  onSubmit,
+  isLoading,
+  initialValues = null,
+  resetTrigger = 0,
+}) {
   const { doctors } = useClinicQueries();
   const { patients, isLoading: isLoadingPatients } = useUserQueries();
-  const { doctorsWorkingDays, isLoading: isLoadingWorkingHours } =
-    useAllDoctorsWorkingHours();
+  const { doctorsWorkingDays } = useAllDoctorsWorkingHours();
   const [patientType, setPatientType] = useState("new");
   const [availableTimeSlots, setAvailableTimeSlots] = useState([]);
   const [isCheckingSlots, setIsCheckingSlots] = useState(false);
@@ -47,6 +51,8 @@ function AppointmentForm({ onSubmit, isLoading, initialValues = null }) {
       appointmentDate: null,
       startTime: "",
       endTime: "",
+      startTimeUTC: "",
+      endTimeUTC: "",
       notes: "",
     },
     validate: {
@@ -86,163 +92,6 @@ function AppointmentForm({ onSubmit, isLoading, initialValues = null }) {
     },
   });
 
-  // Generate time slots from doctor working hours
-  const generateTimeSlotsFromWorkingHours = async (doctorId, selectedDate) => {
-    if (!doctorId || !selectedDate) return [];
-
-    try {
-      setIsCheckingSlots(true);
-
-      const allDoctorsWorkingHours =
-        await appointmentService.getAllDoctorsWorkingHours();
-      const doctorWorkingHours = allDoctorsWorkingHours.find(
-        (doctor) => doctor.doctorId === parseInt(doctorId)
-      );
-
-      console.log("Doctor working hours:", doctorWorkingHours);
-
-      if (!doctorWorkingHours || !doctorWorkingHours.workingHours) {
-        console.log("No working hours found, using default slots");
-        return generateDefaultTimeSlots();
-      }
-
-      const dayOfWeek = dayjs(selectedDate).day();
-      const workingDay = doctorWorkingHours.workingHours.find(
-        (day) => day.dayOfWeek === dayOfWeek
-      );
-
-      console.log("Working day data:", workingDay);
-
-      if (
-        !workingDay ||
-        workingDay.startTime === "00:00:00" ||
-        workingDay.endTime === "00:00:00"
-      ) {
-        console.log("Doctor doesn't work on this day");
-        return [];
-      }
-
-      const selectedDateStr = dayjs(selectedDate).format("YYYY-MM-DD");
-      const startTime = dayjs
-        .utc(`${selectedDateStr} ${workingDay.startTime}`)
-        .tz(dayjs.tz.guess());
-      const endTime = dayjs
-        .utc(`${selectedDateStr} ${workingDay.endTime}`)
-        .tz(dayjs.tz.guess());
-
-      console.log(
-        "Working hours:",
-        startTime.format("h:mm A"),
-        "to",
-        endTime.format("h:mm A")
-      );
-
-      const slots = [];
-      let currentTime = startTime;
-
-      while (currentTime.isBefore(endTime)) {
-        const timeString = currentTime.format("HH:mm");
-        const displayTime = currentTime.format("h:mm A");
-
-        slots.push({
-          value: timeString,
-          label: displayTime,
-        });
-
-        currentTime = currentTime.add(30, "minute");
-      }
-
-      console.log("Generated", slots.length, "time slots");
-      return slots;
-    } catch (error) {
-      console.error("Error generating time slots:", error);
-      return generateDefaultTimeSlots();
-    } finally {
-      setIsCheckingSlots(false);
-    }
-  };
-
-  // Default time slots (9 AM to 5 PM, 30-minute intervals)
-  const generateDefaultTimeSlots = () => {
-    console.log("Generating default time slots");
-    const slots = [];
-    for (let hour = 9; hour < 17; hour++) {
-      for (let minute = 0; minute < 60; minute += 30) {
-        const timeString = `${hour.toString().padStart(2, "0")}:${minute
-          .toString()
-          .padStart(2, "0")}`;
-        const displayTime = dayjs(`2000-01-01 ${timeString}`).format("h:mm A");
-
-        slots.push({
-          value: timeString,
-          label: displayTime,
-        });
-      }
-    }
-    return slots;
-  };
-
-  // Check available slots for the entire day using the API
-  const getAvailableSlotsForDay = async (doctorId, selectedDate) => {
-    try {
-      const dateStr = dayjs(selectedDate).format("YYYY-MM-DD");
-      const startOfDay = dayjs(`${dateStr} 00:00:00`).toISOString();
-      const endOfDay = dayjs(`${dateStr} 23:59:59`).toISOString();
-
-      const response = await appointmentService.getAvailableSlots(
-        parseInt(doctorId),
-        {
-          from: startOfDay,
-          to: endOfDay,
-        }
-      );
-
-      console.log("API response for available slots:", response);
-
-      if (
-        response.isSuccess &&
-        response.result &&
-        Array.isArray(response.result)
-      ) {
-        const availableSlots = response.result.map((utcTime) => {
-          const localTime = dayjs(utcTime).tz(dayjs.tz.guess());
-          return localTime.format("HH:mm");
-        });
-
-        console.log("Available time slots from API:", availableSlots);
-        return availableSlots;
-      }
-
-      console.log("No available slots returned from API");
-      return [];
-    } catch (error) {
-      console.error("Error getting available slots:", error);
-      return "all-available";
-    }
-  };
-
-  // Filter time slots based on API availability
-  const filterAvailableSlots = async (timeSlots, doctorId, selectedDate) => {
-    if (!timeSlots.length || !doctorId || !selectedDate) {
-      console.log("No slots to filter or missing parameters");
-      return [];
-    }
-
-    console.log("Checking availability for", timeSlots.length, "time slots");
-
-    const apiAvailableSlots = await getAvailableSlotsForDay(
-      doctorId,
-      selectedDate
-    );
-
-    const availableSlots = timeSlots.filter((slot) => {
-      return apiAvailableSlots.includes(slot.value);
-    });
-
-    console.log("Filtered available slots:", availableSlots);
-    return availableSlots;
-  };
-
   // Load available time slots when doctor or date changes
   useEffect(() => {
     const loadTimeSlots = async () => {
@@ -250,20 +99,98 @@ function AppointmentForm({ onSubmit, isLoading, initialValues = null }) {
         setIsCheckingSlots(true);
         form.setFieldValue("startTime", "");
         form.setFieldValue("endTime", "");
+        form.setFieldValue("startTimeUTC", "");
+        form.setFieldValue("endTimeUTC", "");
 
-        const allSlots = await generateTimeSlotsFromWorkingHours(
-          form.values.doctorId,
-          form.values.appointmentDate
-        );
+        // Get available slots directly from API
+        try {
+          const dateStr = dayjs(form.values.appointmentDate).format(
+            "YYYY-MM-DD"
+          );
+          const startOfDay = dayjs.utc(`${dateStr} 00:00:00`).toISOString();
+          const endOfDay = dayjs.utc(`${dateStr} 23:59:59`).toISOString();
 
-        const available = await filterAvailableSlots(
-          allSlots,
-          form.values.doctorId,
-          form.values.appointmentDate
-        );
+          console.log("🔍 FETCHING AVAILABLE SLOTS:");
+          console.log("  Doctor ID:", parseInt(form.values.doctorId));
+          console.log("  Selected Date:", dateStr);
+          console.log("  Date Range:", { from: startOfDay, to: endOfDay });
 
-        setAvailableTimeSlots(available);
-        setIsCheckingSlots(false);
+          const response = await appointmentService.getAvailableSlots(
+            parseInt(form.values.doctorId),
+            {
+              from: startOfDay,
+              to: endOfDay,
+            }
+          );
+
+          console.log("📡 RAW API RESPONSE:");
+          console.log("  Full Response:", JSON.stringify(response, null, 2));
+          console.log("  Response Type:", typeof response);
+          console.log("  Response Keys:", Object.keys(response || {}));
+          console.log("  isSuccess:", response?.isSuccess);
+          console.log("  result:", response?.result);
+          console.log("  result type:", typeof response?.result);
+          console.log(
+            "  result length:",
+            Array.isArray(response?.result)
+              ? response.result.length
+              : "not an array"
+          );
+
+          if (
+            response.isSuccess &&
+            response.result &&
+            Array.isArray(response.result)
+          ) {
+            console.log("✅ PROCESSING AVAILABLE SLOTS:");
+            console.log("  Raw UTC Times:", response.result);
+
+            // Filter out the indicator slot that ends with "T23:30:00Z"
+            const filteredSlots = response.result.filter((utcTime) => {
+              return !utcTime.endsWith("T23:30:00Z");
+            });
+
+            console.log(
+              "🔍 FILTERED SLOTS (removed indicator):",
+              filteredSlots
+            );
+
+            const availableSlots = filteredSlots.map((utcTime, index) => {
+              const localTime = dayjs(utcTime).tz(dayjs.tz.guess());
+              const slot = {
+                value: utcTime, // Keep the original UTC time as value
+                label: localTime.format("h:mm A"), // Display in local time
+                displayTime: localTime.format("HH:mm"), // For internal use
+              };
+              console.log(
+                `  Slot ${index + 1}: ${utcTime} → ${
+                  slot.label
+                } (UTC: ${utcTime})`
+              );
+              return slot;
+            });
+
+            console.log("🎯 FINAL PROCESSED SLOTS:", availableSlots);
+            setAvailableTimeSlots(availableSlots);
+          } else {
+            console.log("❌ NO AVAILABLE SLOTS:");
+            console.log("  isSuccess:", response?.isSuccess);
+            console.log("  result exists:", !!response?.result);
+            console.log("  result is array:", Array.isArray(response?.result));
+            console.log("  Setting empty slots array");
+            setAvailableTimeSlots([]);
+          }
+        } catch (error) {
+          console.error("🚨 ERROR FETCHING AVAILABLE SLOTS:");
+          console.error("  Error Object:", error);
+          console.error("  Error Message:", error.message);
+          console.error("  Error Response:", error.response?.data);
+          console.error("  Error Status:", error.response?.status);
+          console.error("  Error Config:", error.config);
+          setAvailableTimeSlots([]);
+        } finally {
+          setIsCheckingSlots(false);
+        }
       } else {
         setAvailableTimeSlots([]);
       }
@@ -275,32 +202,29 @@ function AppointmentForm({ onSubmit, isLoading, initialValues = null }) {
   // Auto-set end time when start time changes
   useEffect(() => {
     if (form.values.startTime) {
-      let parsedTime;
+      // Find the selected slot to get its UTC time
+      const selectedSlot = availableTimeSlots.find(
+        (slot) => slot.label === form.values.startTime
+      );
 
-      if (
-        form.values.startTime.includes("AM") ||
-        form.values.startTime.includes("PM")
-      ) {
-        parsedTime = dayjs(
-          `2000-01-01 ${form.values.startTime}`,
-          "YYYY-MM-DD h:mm A"
-        );
-      } else {
-        parsedTime = dayjs(
-          `2000-01-01 ${form.values.startTime}`,
-          "YYYY-MM-DD HH:mm"
-        );
-      }
+      if (selectedSlot) {
+        // Use the UTC time from the selected slot and add 30 minutes
+        const startTimeUTC = dayjs(selectedSlot.value);
+        const endTimeUTC = startTimeUTC.add(30, "minute");
 
-      if (parsedTime.isValid()) {
-        const endTime = parsedTime.add(30, "minute");
-        const endTimeString = endTime.format("HH:mm");
-        form.setFieldValue("endTime", endTimeString);
+        // Convert end time to local time for display
+        const endTimeLocal = endTimeUTC.tz(dayjs.tz.guess());
+        const endTimeDisplay = endTimeLocal.format("h:mm A");
+
+        form.setFieldValue("endTime", endTimeDisplay);
+        // Store the UTC end time for form submission
+        form.setFieldValue("endTimeUTC", endTimeUTC.toISOString());
       }
     } else {
       form.setFieldValue("endTime", "");
+      form.setFieldValue("endTimeUTC", "");
     }
-  }, [form.values.startTime]);
+  }, [form.values.startTime, availableTimeSlots]);
 
   // Clear fields when patient type changes
   useEffect(() => {
@@ -321,6 +245,17 @@ function AppointmentForm({ onSubmit, isLoading, initialValues = null }) {
       });
     }
   }, [patientType]);
+
+  // Reset form when resetTrigger changes
+  useEffect(() => {
+    if (resetTrigger > 0) {
+      console.log("🔄 RESETTING APPOINTMENT FORM");
+      form.reset();
+      setPatientType("new");
+      setAvailableTimeSlots([]);
+      setIsCheckingSlots(false);
+    }
+  }, [resetTrigger]);
 
   // Validate time format
   const validateTimeFormat = (value) => {
@@ -380,18 +315,25 @@ function AppointmentForm({ onSubmit, isLoading, initialValues = null }) {
   };
 
   const handleSubmit = (values) => {
-    const startDateTime = combineDateTime(
-      values.appointmentDate,
-      values.startTime
+    // Find the selected slot to get the UTC start time
+    const selectedSlot = availableTimeSlots.find(
+      (slot) => slot.label === values.startTime
     );
-    const endDateTime = combineDateTime(values.appointmentDate, values.endTime);
+
+    if (!selectedSlot) {
+      console.error("Selected time slot not found in available slots");
+      return;
+    }
+
+    const startDateUTC = selectedSlot.value; // This is already in UTC
+    const endDateUTC = values.endTimeUTC; // This was calculated and stored in UTC
 
     console.log("Form values before processing:", {
       appointmentDate: values.appointmentDate,
       startTime: values.startTime,
       endTime: values.endTime,
-      startDateTime,
-      endDateTime,
+      startDateUTC,
+      endDateUTC,
       patientType,
       values,
     });
@@ -400,8 +342,8 @@ function AppointmentForm({ onSubmit, isLoading, initialValues = null }) {
 
     if (patientType === "existing") {
       formattedValues = {
-        startDate: convertToUTC(startDateTime),
-        endDate: convertToUTC(endDateTime),
+        startDate: startDateUTC,
+        endDate: endDateUTC,
         notes: values.notes ? values.notes.trim() : "",
         doctorId: parseInt(values.doctorId),
         userId: values.patientId,
@@ -413,8 +355,8 @@ function AppointmentForm({ onSubmit, isLoading, initialValues = null }) {
         email: values.email.trim(),
         phoneNumber: values.phoneNumber.trim(),
         address: values.address.trim(),
-        startDate: convertToUTC(startDateTime),
-        endDate: convertToUTC(endDateTime),
+        startDate: startDateUTC,
+        endDate: endDateUTC,
         notes: values.notes ? values.notes.trim() : "",
         doctorId: parseInt(values.doctorId),
       };
@@ -552,7 +494,7 @@ function AppointmentForm({ onSubmit, isLoading, initialValues = null }) {
               isCheckingSlots
             }
             {...form.getInputProps("startTime")}
-            limit={10}
+            limit={50}
           />
 
           <TextInput
@@ -560,11 +502,7 @@ function AppointmentForm({ onSubmit, isLoading, initialValues = null }) {
             label="End Time"
             placeholder="Auto-calculated"
             disabled
-            value={
-              form.values.endTime
-                ? dayjs(`2000-01-01 ${form.values.endTime}`).format("h:mm A")
-                : ""
-            }
+            value={form.values.endTime || ""}
           />
         </Group>
 

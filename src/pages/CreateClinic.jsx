@@ -35,14 +35,10 @@ function CreateClinic() {
       }
 
       await createClinic({ name: name.trim() });
-      navigate("/clinics");
+      navigate(-1);
     } catch (error) {
       console.error("Error creating clinic:", error);
-      notifications.show({
-        title: "Error",
-        message: error.message || "Failed to create clinic",
-        color: "red",
-      });
+      // Error notification is already handled by the mutation
     }
   };
 
@@ -51,11 +47,7 @@ function CreateClinic() {
       <Stack gap="xl">
         <Group justify="space-between">
           <Group>
-            <ActionIcon
-              variant="subtle"
-              onClick={() => navigate("/clinics")}
-              size="lg"
-            >
+            <ActionIcon variant="subtle" onClick={() => navigate(-1)} size="lg">
               <IconArrowLeft size={20} />
             </ActionIcon>
             <Title order={2}>Create New Clinic</Title>
@@ -82,10 +74,7 @@ function CreateClinic() {
                   </Group>
 
                   <Group justify="flex-end" mt="md">
-                    <Button
-                      variant="light"
-                      onClick={() => navigate("/clinics")}
-                    >
+                    <Button variant="light" onClick={() => navigate(-1)}>
                       Cancel
                     </Button>
                     <Button type="submit" loading={isCreating}>

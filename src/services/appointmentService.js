@@ -150,14 +150,35 @@ export const appointmentService = {
   /**
    * Update an appointment
    * @param {Object} data - The updated appointment data
+   * @param {number} data.id - Appointment ID
+   * @param {string} data.startDate - Start date and time in ISO format
+   * @param {string} data.endDate - End date and time in ISO format
+   * @param {string} data.notes - Additional notes
+   * @param {number} data.doctorId - Doctor ID
    * @returns {Promise<void>}
    */
   updateAppointment: async (data) => {
     try {
-      await api.put(`/Appointment/update`, data);
-      return;
+      console.log("🔄 UPDATE APPOINTMENT API CALL");
+      console.log("📤 Sending to PUT /Appointment/update:");
+      console.log("   Request Body:", JSON.stringify(data, null, 2));
+
+      const response = await api.put(`/Appointment/update`, data);
+
+      console.log("✅ UPDATE APPOINTMENT SUCCESS");
+      console.log("📥 Response:", response.data);
+
+      return response.data;
     } catch (error) {
-      console.error("Error updating appointment:", error);
+      console.error("❌ ERROR UPDATING APPOINTMENT:");
+      console.error("   Error object:", error);
+      console.error("   Error message:", error.message);
+      console.error("   Error response:", error.response?.data);
+      console.error("   Error status:", error.response?.status);
+      console.error(
+        "   Request data that failed:",
+        JSON.stringify(data, null, 2)
+      );
       throw error;
     }
   },

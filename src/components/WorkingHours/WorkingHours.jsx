@@ -150,11 +150,7 @@ const WorkingHours = ({ doctorId }) => {
       setInitialWorkingHours(currentHours);
     } catch (error) {
       console.error("Error saving working hours:", error);
-      notifications.show({
-        title: "Error",
-        message: error.message || "Failed to save working hours",
-        color: "red",
-      });
+      // Error notification is already handled by the mutation
     }
   };
 
