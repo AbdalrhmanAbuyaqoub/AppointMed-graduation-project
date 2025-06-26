@@ -192,17 +192,15 @@ function EditAppointmentForm({ appointment, onSubmit, isLoading, onCancel }) {
 
     const formattedValues = {
       id: values.appointmentId,
-      startDate: startTimeUTC.toISOString(), // Use consistent format
-      endDate: endTimeUTC.toISOString(),
+      newStartDate: startTimeUTC.toISOString(), // Changed from startDate
+      newEndDate: endTimeUTC.toISOString(), // Changed from endDate
       notes: values.notes ? values.notes.trim() : "",
       doctorId: parseInt(values.doctorId),
-      userId: appointment?.userId || appointment?.patientId, // Add userId field
     };
 
     console.log("🔍 PATIENT INFO DEBUG:");
     console.log("   appointment.userId:", appointment?.userId);
     console.log("   appointment.patientId:", appointment?.patientId);
-    console.log("   Selected userId for request:", formattedValues.userId);
 
     console.log("📤 REQUEST BODY for updateAppointment API:");
     console.log("   API Endpoint: PUT /Appointment/update");
@@ -215,16 +213,16 @@ function EditAppointmentForm({ appointment, onSubmit, isLoading, onCancel }) {
       formattedValues.id
     );
     console.log(
-      "     - startDate:",
-      typeof formattedValues.startDate,
+      "     - newStartDate:",
+      typeof formattedValues.newStartDate,
       "->",
-      formattedValues.startDate
+      formattedValues.newStartDate
     );
     console.log(
-      "     - endDate:",
-      typeof formattedValues.endDate,
+      "     - newEndDate:",
+      typeof formattedValues.newEndDate,
       "->",
-      formattedValues.endDate
+      formattedValues.newEndDate
     );
     console.log(
       "     - notes:",

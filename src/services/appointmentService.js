@@ -151,8 +151,8 @@ export const appointmentService = {
    * Update an appointment
    * @param {Object} data - The updated appointment data
    * @param {number} data.id - Appointment ID
-   * @param {string} data.startDate - Start date and time in ISO format
-   * @param {string} data.endDate - End date and time in ISO format
+   * @param {string} data.newStartDate - New start date and time in ISO format
+   * @param {string} data.newEndDate - New end date and time in ISO format
    * @param {string} data.notes - Additional notes
    * @param {number} data.doctorId - Doctor ID
    * @returns {Promise<void>}
