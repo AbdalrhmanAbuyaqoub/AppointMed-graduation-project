@@ -7,6 +7,9 @@ import {
   ActionIcon,
   Box,
   Center,
+  Modal,
+  Button,
+  Stack,
 } from "@mantine/core";
 import {
   IconUser,
@@ -16,13 +19,17 @@ import {
 import { useState } from "react";
 import { useAppointmentQueries } from "../hooks/useAppointmentQueries";
 import AppointmentDetailsDrawer from "./AppointmentDetailsDrawer";
+import EditAppointmentForm from "./EditAppointmentForm";
 import { notifications } from "@mantine/notifications";
 
 function TodaysAppointmentsTable({ appointments = [] }) {
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [isDetailsDrawerOpen, setIsDetailsDrawerOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-  const { updateAppointmentStatus } = useAppointmentQueries();
+  const { updateAppointmentStatus, updateAppointment, deleteAppointment } =
+    useAppointmentQueries();
 
   // Status mapping
   const statusMap = {
@@ -56,6 +63,52 @@ function TodaysAppointmentsTable({ appointments = [] }) {
       notifications.show({
         title: "Error",
         message: error.message || "Failed to update appointment status",
+        color: "red",
+      });
+    }
+  };
+
+  // Handle edit appointment
+  const handleEdit = (appointment) => {
+    setSelectedAppointment(appointment);
+    setIsEditModalOpen(true);
+  };
+
+  // Handle delete appointment
+  const handleDelete = async (appointmentId) => {
+    try {
+      await deleteAppointment.mutateAsync(appointmentId);
+      notifications.show({
+        title: "Success",
+        message: "Appointment deleted successfully",
+        color: "green",
+      });
+    } catch (error) {
+      notifications.show({
+        title: "Error",
+        message: error.message || "Failed to delete appointment",
+        color: "red",
+      });
+    }
+  };
+
+  // Handle update appointment
+  const handleUpdate = async (values) => {
+    try {
+      await updateAppointment.mutateAsync({
+        id: selectedAppointment.id,
+        ...values,
+      });
+      notifications.show({
+        title: "Success",
+        message: "Appointment updated successfully",
+        color: "green",
+      });
+      setIsEditModalOpen(false);
+    } catch (error) {
+      notifications.show({
+        title: "Error",
+        message: error.message || "Failed to update appointment",
         color: "red",
       });
     }
@@ -162,11 +215,68 @@ function TodaysAppointmentsTable({ appointments = [] }) {
         </Table.Tbody>
       </Table>
 
+      {/* Edit Appointment Modal */}
+      <Modal
+        opened={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        title={<Text fw={600}>Edit Appointment</Text>}
+        size="lg"
+        radius="md"
+        centered
+      >
+        {selectedAppointment && (
+          <EditAppointmentForm
+            appointment={selectedAppointment}
+            onSubmit={handleUpdate}
+            isLoading={updateAppointment.isPending}
+            onCancel={() => setIsEditModalOpen(false)}
+          />
+        )}
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        opened={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        title="Delete Appointment"
+        size="sm"
+      >
+        <Stack>
+          <Text>
+            Are you sure you want to delete this appointment for{" "}
+            {selectedAppointment?.patientName}?
+          </Text>
+          <Group justify="flex-end" mt="md">
+            <Button variant="light" onClick={() => setIsDeleteModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              color="red"
+              loading={deleteAppointment.isPending}
+              onClick={() => {
+                handleDelete(selectedAppointment.id);
+                setIsDeleteModalOpen(false);
+              }}
+            >
+              Delete
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
+
       {/* Appointment Details Drawer */}
       <AppointmentDetailsDrawer
         opened={isDetailsDrawerOpen}
         onClose={() => setIsDetailsDrawerOpen(false)}
         appointment={selectedAppointment}
+        onEdit={() => {
+          setIsDetailsDrawerOpen(false);
+          setIsEditModalOpen(true);
+        }}
+        onDelete={() => {
+          setIsDetailsDrawerOpen(false);
+          setIsDeleteModalOpen(true);
+        }}
       />
     </>
   );
