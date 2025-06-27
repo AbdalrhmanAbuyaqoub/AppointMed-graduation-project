@@ -36,7 +36,13 @@ import {
 import { getUserInitials } from "../utils/userUtils";
 import DeleteConfirmationModal from "../components/DeleteConfirmationModal";
 import { useState } from "react";
-// Using native JavaScript Date methods for formatting
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+
+// Add dayjs plugins
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 const statusMap = {
   0: "Scheduled",
@@ -94,6 +100,61 @@ export default function PatientDetails() {
 
     return "N/A";
   };
+
+  // Format appointments similar to how AppointmentsTable does it
+  const formattedAppointments = (appointments || []).map((appointment) => {
+    try {
+      const startDate = appointment.startDate
+        ? dayjs.utc(appointment.startDate).tz(dayjs.tz.guess())
+        : null;
+
+      // Validate if the date is valid
+      if (!startDate || !startDate.isValid()) {
+        return {
+          ...appointment,
+          id: appointment.id,
+          doctorName: appointment.doctor?.name || "N/A",
+          clinicName: getClinicName(appointment),
+          date: "Invalid Date",
+          time: "Invalid Time",
+          displayDate: "Invalid Date",
+          status: appointment.status !== undefined ? appointment.status : 0,
+          notes: appointment.notes || "No notes",
+        };
+      }
+
+      // Format date as YYYY-MM-DD for consistent comparison
+      const dateStr = startDate.format("YYYY-MM-DD");
+
+      return {
+        ...appointment,
+        id: appointment.id,
+        doctorName: appointment.doctor?.name || "N/A",
+        clinicName: getClinicName(appointment),
+        // Store the raw date for potential filtering
+        rawDate: startDate.toDate(),
+        // Format date for display
+        date: dateStr,
+        displayDate: startDate.format("MMM D, YYYY"),
+        time: startDate.format("hh:mm A"),
+        status: appointment.status !== undefined ? appointment.status : 0,
+        notes: appointment.notes || "No notes",
+      };
+    } catch (error) {
+      console.error("Error formatting appointment:", error);
+      return {
+        ...appointment,
+        id: appointment.id,
+        doctorName: appointment.doctor?.name || "N/A",
+        clinicName: getClinicName(appointment),
+        date: "Error",
+        displayDate: "Error",
+        time: "Error",
+        status: appointment.status !== undefined ? appointment.status : 0,
+        notes: appointment.notes || "No notes",
+      };
+    }
+  });
 
   const isLoading = isPatientsLoading || isAppointmentsLoading;
 
@@ -250,8 +311,8 @@ export default function PatientDetails() {
             <Group gap="xs">
               <IconCalendar size={20} color="var(--mantine-color-gray-6)" />
               <Text size="sm" c="dimmed">
-                {appointments.length} appointment
-                {appointments.length !== 1 ? "s" : ""}
+                {formattedAppointments.length} appointment
+                {formattedAppointments.length !== 1 ? "s" : ""}
               </Text>
             </Group>
           </Group>
@@ -262,7 +323,7 @@ export default function PatientDetails() {
                 Error loading appointments: {appointmentsError.message}
               </Text>
             </Center>
-          ) : appointments.length === 0 ? (
+          ) : formattedAppointments.length === 0 ? (
             <Center py="xl">
               <Stack align="center" gap="md">
                 <IconCalendar size={48} opacity={0.4} />
@@ -279,7 +340,8 @@ export default function PatientDetails() {
               <Table.Thead>
                 <Table.Tr>
                   <Table.Th c="dimmed">ID</Table.Th>
-                  <Table.Th c="dimmed">Date & Time</Table.Th>
+                  <Table.Th c="dimmed">Date</Table.Th>
+                  <Table.Th c="dimmed">Time</Table.Th>
                   <Table.Th c="dimmed">Doctor</Table.Th>
                   <Table.Th c="dimmed">Clinic</Table.Th>
                   <Table.Th c="dimmed">Status</Table.Th>
@@ -287,7 +349,7 @@ export default function PatientDetails() {
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
-                {appointments.map((appointment) => {
+                {formattedAppointments.map((appointment) => {
                   const statusText =
                     statusMap[appointment.status] || "Scheduled";
                   const statusColor =
@@ -301,47 +363,21 @@ export default function PatientDetails() {
                         </Text>
                       </Table.Td>
                       <Table.Td>
-                        <Group gap="xs">
-                          <IconClock size={16} opacity={0.6} />
-                          <Stack gap="0">
-                            <Text size="sm" fw={500}>
-                              {new Date(
-                                appointment.startDate
-                              ).toLocaleDateString("en-US", {
-                                month: "short",
-                                day: "numeric",
-                                year: "numeric",
-                              })}
-                            </Text>
-                            <Text size="xs" c="dimmed">
-                              {new Date(
-                                appointment.startDate
-                              ).toLocaleTimeString("en-US", {
-                                hour: "numeric",
-                                minute: "2-digit",
-                                hour12: true,
-                              })}{" "}
-                              -{" "}
-                              {new Date(appointment.endDate).toLocaleTimeString(
-                                "en-US",
-                                {
-                                  hour: "numeric",
-                                  minute: "2-digit",
-                                  hour12: true,
-                                }
-                              )}
-                            </Text>
-                          </Stack>
-                        </Group>
+                        <Text size="sm" fw={500}>
+                          {appointment.displayDate || appointment.date}
+                        </Text>
+                      </Table.Td>
+                      <Table.Td>
+                        <Text size="sm">{appointment.time}</Text>
                       </Table.Td>
                       <Table.Td>
                         <Text size="sm" fw={500}>
-                          {appointment.doctor?.name || "N/A"}
+                          {appointment.doctorName}
                         </Text>
                       </Table.Td>
                       <Table.Td>
                         <Text size="sm" c="dimmed">
-                          {getClinicName(appointment)}
+                          {appointment.clinicName}
                         </Text>
                       </Table.Td>
                       <Table.Td>
@@ -351,7 +387,7 @@ export default function PatientDetails() {
                       </Table.Td>
                       <Table.Td>
                         <Text size="sm" c="dimmed">
-                          {appointment.notes || "No notes"}
+                          {appointment.notes}
                         </Text>
                       </Table.Td>
                     </Table.Tr>
