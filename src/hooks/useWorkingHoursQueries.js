@@ -137,6 +137,8 @@ export function useWorkingHoursQueries(doctorId) {
       return convertApiDataToComponentFormat(allDoctorsWorkingHours, doctorId);
     },
     enabled: !!doctorId,
+    staleTime: 1000 * 60 * 2, // Cache for 2 minutes
+    refetchOnWindowFocus: false, // Prevent unnecessary refetches
     onError: (error) => {
       notifications.show({
         title: "Error",
@@ -152,11 +154,6 @@ export function useWorkingHoursQueries(doctorId) {
       queryClient.invalidateQueries({ queryKey: ["working-hours", doctorId] });
       queryClient.invalidateQueries({
         queryKey: ["all-doctors-working-hours"],
-      });
-      notifications.show({
-        title: "Success",
-        message: "Working hours updated successfully",
-        color: "green",
       });
     },
     onError: (error) => {
@@ -174,11 +171,6 @@ export function useWorkingHoursQueries(doctorId) {
       queryClient.invalidateQueries({ queryKey: ["working-hours", doctorId] });
       queryClient.invalidateQueries({
         queryKey: ["all-doctors-working-hours"],
-      });
-      notifications.show({
-        title: "Success",
-        message: "Working hours created successfully",
-        color: "green",
       });
     },
     onError: (error) => {
@@ -208,7 +200,8 @@ export function useAllDoctorsWorkingHours() {
       const allDoctorsWorkingHours = await fetchAllDoctorsWorkingHours();
       return convertToTableFormat(allDoctorsWorkingHours);
     },
-    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    staleTime: 1000 * 60 * 3, // Cache for 3 minutes
+    refetchOnWindowFocus: false, // Prevent unnecessary refetches
     onError: (error) => {
       console.error("Error fetching all doctors working hours:", error);
     },

@@ -56,9 +56,9 @@ api.interceptors.response.use(
  * @property {string} endDate - The appointment end date and time
  * @property {string} notes - Additional notes for the appointment
  * @property {Doctor} doctor - The doctor object with full details
- * @property {string} clinicName - The name of the clinic
+ * @property {string} clinicName - The name of the clinic (may not be present in user appointments)
  * @property {string} patientName - The name of the patient
- * @property {string} patientId - The UUID of the patient
+ * @property {string} patientId - The UUID of the patient (may not be present in user appointments)
  * @property {number} status - The appointment status (0: scheduled, 1: cancelled, 2: completed, 3: no show)
  */
 
@@ -239,14 +239,14 @@ export const appointmentService = {
   },
 
   /**
-   * Get appointments by user ID
+   * Get appointments by user ID with status
    * @param {string} userId - The user ID
    * @returns {Promise<Appointment[]>}
    */
   getAppointmentsByUser: async (userId) => {
     try {
       const response = await api.get(
-        `/Appointment/get-Appointments-by-user/${userId}`
+        `/Appointment/get-Appointments-by-user-with-status/${userId}`
       );
       return Array.isArray(response.data) ? response.data : [];
     } catch (error) {

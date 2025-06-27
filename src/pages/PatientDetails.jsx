@@ -78,6 +78,12 @@ export default function PatientDetails() {
 
   // Helper function to get clinic name from various sources
   const getClinicName = (appointment) => {
+    // Then try to get clinic name from doctor information in the appointment
+    if (appointment.doctor?.clinicName) {
+      return appointment.doctor.clinicName;
+    }
+
+    // Try to find doctor in the global doctors list and get clinic name
     if (appointment.doctor?.id) {
       const doctorId = appointment.doctor.id;
       const doctor = doctors.find((d) => d.id === doctorId);
@@ -272,6 +278,7 @@ export default function PatientDetails() {
             <Table highlightOnHover verticalSpacing="sm">
               <Table.Thead>
                 <Table.Tr>
+                  <Table.Th c="dimmed">ID</Table.Th>
                   <Table.Th c="dimmed">Date & Time</Table.Th>
                   <Table.Th c="dimmed">Doctor</Table.Th>
                   <Table.Th c="dimmed">Clinic</Table.Th>
@@ -288,6 +295,11 @@ export default function PatientDetails() {
 
                   return (
                     <Table.Tr key={appointment.id}>
+                      <Table.Td>
+                        <Text size="sm" fw={500}>
+                          {appointment.id}
+                        </Text>
+                      </Table.Td>
                       <Table.Td>
                         <Group gap="xs">
                           <IconClock size={16} opacity={0.6} />

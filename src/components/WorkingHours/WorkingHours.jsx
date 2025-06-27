@@ -59,6 +59,7 @@ const WorkingHours = ({ doctorId }) => {
     label: Intl.DateTimeFormat().resolvedOptions().timeZone,
   });
   const [isInitialState, setIsInitialState] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   const {
     workingHours,
@@ -148,6 +149,8 @@ const WorkingHours = ({ doctorId }) => {
       }
 
       setInitialWorkingHours(currentHours);
+      setHasUnsavedChanges(true);
+      debouncedSuccessNotification(); // Show success notification after all changes
     } catch (error) {
       console.error("Error saving working hours:", error);
       // Error notification is already handled by the mutation
@@ -157,7 +160,7 @@ const WorkingHours = ({ doctorId }) => {
   // Create debounced save function
   const debouncedSave = useDebounce((currentHours) => {
     saveWorkingHours(currentHours);
-  }, 2000); // Save after 2 seconds of no changes
+  }, 500); // Save after 500ms of no changes for faster auto-update
 
   // Auto-save when availableDays changes
   useEffect(() => {
@@ -169,6 +172,18 @@ const WorkingHours = ({ doctorId }) => {
       debouncedSave(availableDays);
     }
   }, [availableDays, initialWorkingHours, debouncedSave]);
+
+  // Debounced notification for success
+  const debouncedSuccessNotification = useDebounce(() => {
+    if (hasUnsavedChanges) {
+      notifications.show({
+        title: "Success",
+        message: "Working hours saved successfully",
+        color: "green",
+      });
+      setHasUnsavedChanges(false);
+    }
+  }, 1000); // Show success notification 1 second after last change
 
   const handleToggleDay = (day) => {
     setAvailableDays((prev) => ({
