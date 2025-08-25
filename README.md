@@ -71,12 +71,12 @@ src/
 
 ### Backend
 
-**Repository**: [graduation-backend](https://github.com/Yousef-Sabra/ClinicAppointmentBookingnew.git)  
+**Repository**: [appointMed-backend](https://github.com/Yousef-Sabra/ClinicAppointmentBookingnew.git)  
 _Core backend API handling appointment management, user authentication, clinic operations, and data persistence._
 
 ### AI Agent (Chatbot & AI Services)
 
-**Repository**: [graduation-ai-agent](https://github.com/Majhool/AppointmentBookingMaster.git)  
+**Repository**: [appointMed-ai-agent](https://github.com/Majhool/AppointmentBookingMaster.git)  
 _Comprehensive AI service powered by DeepSeek's Large Language Model handling all chatbot functionality, conversational appointment booking, and intelligent patient interaction across multiple platforms including web chat and Telegram._
 
 ### API Integration
